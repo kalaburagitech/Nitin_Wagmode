@@ -1,0 +1,108 @@
+---
+title: "Offline Sync Patterns for React Native Field Apps"
+description: "Queueing actions locally with AsyncStorage, replaying them when connectivity returns, and keeping the UI honest about what has and hasn't synced."
+date: 2026-10-02
+category: "React Native"
+tags: ["React Native", "Offline Sync", "AsyncStorage", "Redux Toolkit"]
+keywords: ["React Native offline sync", "AsyncStorage queue", "NetInfo", "offline first mobile app"]
+readingTime: "6 min read"
+image: /assets/blog/offline-sync-react-native.svg
+imageAlt: "Sync arrows illustrating offline data synchronization"
+draft: true
+slug: offline-sync-react-native
+---
+
+Field users don't wait for good signal. They record attendance in a basement car park, complete an inspection in a lift lobby, and log an issue on a site with one bar of coverage. If the app throws an error every time the network drops, people stop trusting it.
+
+An offline-capable app needs three things: a durable queue of pending actions, a reliable way to replay them, and a UI that tells the truth about sync status.
+
+## 1. Queue actions, not screens
+
+Store the user's intent as small, serializable actions with a client-generated id. The id lets the server ignore duplicates if a request is retried after it actually succeeded.
+
+```ts
+type PendingAction = {
+  id: string; // client-generated, sent as an idempotency key
+  type: "attendance/checkIn" | "issue/create" | "inspection/submit";
+  payload: unknown;
+  createdAt: number;
+  attempts: number;
+};
+```
+
+## 2. Persist the queue
+
+AsyncStorage is enough for a modest queue. Write after every change so nothing is lost if the app is killed.
+
+```ts
+const QUEUE_KEY = "sync-queue/v1";
+
+export async function loadQueue(): Promise<PendingAction[]> {
+  const raw = await AsyncStorage.getItem(QUEUE_KEY);
+  return raw ? JSON.parse(raw) : [];
+}
+
+export async function saveQueue(queue: PendingAction[]) {
+  await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+}
+```
+
+## 3. Update the UI optimistically
+
+When the user submits, add the action to the queue and update Redux state immediately with a `pending` flag. The record appears in the list at once, marked as "waiting to sync".
+
+```ts
+builder.addCase(issueQueued, (state, action) => {
+  state.items.unshift({ ...action.payload, syncStatus: "pending" });
+});
+```
+
+## 4. Replay when the network returns
+
+Listen for connectivity changes and flush the queue in order. Stop at the first network failure so actions aren't reordered, and back off between retries.
+
+```ts
+NetInfo.addEventListener((state) => {
+  if (state.isConnected && state.isInternetReachable) {
+    store.dispatch(flushQueue());
+  }
+});
+
+export const flushQueue = createAsyncThunk("sync/flush", async (_, { dispatch }) => {
+  const queue = await loadQueue();
+  while (queue.length) {
+    const action = queue[0];
+    try {
+      await api.post(endpointFor(action.type), action.payload, {
+        headers: { "Idempotency-Key": action.id },
+      });
+      queue.shift();
+      await saveQueue(queue);
+      dispatch(actionSynced(action.id));
+    } catch (error) {
+      if (isNetworkError(error)) break; // try again on the next reconnect
+      queue.shift(); // a validation error won't succeed on retry
+      await saveQueue(queue);
+      dispatch(actionFailed({ id: action.id, error: describe(error) }));
+    }
+  }
+});
+```
+
+## 5. Be honest in the UI
+
+A small status indicator ("3 items waiting to sync") and per-record badges do more for trust than any spinner. Failed actions should explain what went wrong and offer a fix — never disappear silently.
+
+## Things to decide early
+
+- **Conflicts:** what happens if two people edit the same record offline? For append-only data like check-ins, there's no conflict; for editable records, decide whether the last write wins or the server rejects stale updates.
+- **Queue size:** cap it, and warn the user if it grows unusually large.
+- **Media:** photos are better uploaded separately, with only a reference stored in the queued action.
+
+## Checklist
+
+- Actions are small, serializable, and carry an idempotency key.
+- The queue is persisted after every change.
+- The UI updates optimistically and marks pending records.
+- Replay is ordered, stops on network errors, and handles validation errors explicitly.
+- Sync status is always visible to the user.

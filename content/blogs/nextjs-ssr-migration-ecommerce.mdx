@@ -1,0 +1,92 @@
+---
+title: "Moving an E-commerce Frontend to Next.js SSR"
+description: "A step-by-step path for migrating a client-rendered React storefront to Next.js server-side rendering without stopping feature work."
+date: 2026-09-26
+category: "Next.js"
+tags: ["Next.js", "React", "SSR", "SEO"]
+keywords: ["Next.js SSR migration", "React to Next.js", "ecommerce SEO Next.js", "server side rendering ecommerce"]
+readingTime: "6 min read"
+image: /assets/blog/nextjs-ssr-migration-ecommerce.svg
+imageAlt: "Server rack illustration for a Next.js server-side rendering migration"
+draft: true
+slug: nextjs-ssr-migration-ecommerce
+---
+
+A client-rendered React storefront has two recurring problems: product pages arrive as an empty shell for search engines and link previews, and the first meaningful paint waits for JavaScript and an API round trip. Server-side rendering with Next.js addresses both — but a big-bang rewrite rarely survives contact with a product roadmap.
+
+This is the incremental path I'd recommend.
+
+## 1. Inventory the routes
+
+List every route and classify it:
+
+- **Static or rarely changing** (about, policies, landing pages) → static generation.
+- **Catalog pages** (category, product detail) → server rendering or incremental static regeneration, because they need fresh prices and stock.
+- **Personal pages** (cart, account, checkout) → rendered on the client behind authentication.
+
+This list becomes the migration plan and the order of work.
+
+## 2. Move shared code first
+
+Components, hooks, API clients, and Redux slices usually move as-is. Anything that touches `window`, `localStorage`, or `document` during render must be moved into effects or client-only components, or it will fail on the server.
+
+```tsx
+// Before: reads storage during render — breaks on the server
+const currency = localStorage.getItem("currency") ?? "INR";
+
+// After: read after mount
+const [currency, setCurrency] = useState("INR");
+useEffect(() => {
+  setCurrency(localStorage.getItem("currency") ?? "INR");
+}, []);
+```
+
+## 3. Render product pages on the server
+
+Fetch product data on the server so the HTML already contains the title, price, description, and images.
+
+```tsx
+export async function getServerSideProps({ params }) {
+  const product = await fetchProduct(params.slug);
+  if (!product) return { notFound: true };
+  return { props: { product } };
+}
+
+export default function ProductPage({ product }) {
+  return (
+    <>
+      <Head>
+        <title>{`${product.name} | Store`}</title>
+        <meta name="description" content={product.summary} />
+        <link rel="canonical" href={`https://example.com/p/${product.slug}`} />
+      </Head>
+      <ProductDetail product={product} />
+    </>
+  );
+}
+```
+
+## 4. Hydrate global state carefully
+
+If the app uses Redux Toolkit, create the store per request on the server and hydrate it on the client, so one user's state never leaks into another user's response.
+
+## 5. Use dynamic routes and redirects
+
+Map old URLs to the new dynamic routes, and add permanent redirects for anything that changes shape. Broken product URLs cost both traffic and trust.
+
+## 6. Ship in slices
+
+Run the Next.js app alongside the old one and move routes over in batches — marketing pages first, then catalog, then account flows. Each batch is measured (Core Web Vitals, crawl results, conversion) before the next one starts.
+
+## What makes it stick
+
+The migration is finished when the team can add a new page without thinking about rendering mode: shared components work on both sides, data fetching has one obvious place per route type, and metadata is generated from the same product data the page renders.
+
+## Checklist
+
+- Every route is classified as static, server-rendered, or client-only.
+- Browser-only APIs are confined to effects and client components.
+- Product pages ship complete HTML with metadata and canonical URLs.
+- The Redux store is created per request on the server.
+- Old URLs redirect permanently to their new routes.
+- Routes migrate in measured batches.

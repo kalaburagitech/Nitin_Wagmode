@@ -1,0 +1,140 @@
+---
+title: "Role-Based Access Control in React and React Native"
+description: "A practical pattern for JWT-backed protected routes and permission checks that works across a React admin dashboard and a React Native app."
+date: 2026-10-20
+category: "Auth & Security"
+tags: ["React", "React Native", "JWT", "RBAC"]
+keywords: ["React RBAC", "protected routes React", "JWT authentication React Native", "role based access control frontend"]
+readingTime: "6 min read"
+image: /assets/blog/rbac-protected-routes-react.svg
+imageAlt: "Shield and lock illustration for role-based access control in React"
+featured: true
+draft: true
+slug: rbac-protected-routes-react
+---
+
+Field operations products usually have more than one kind of user. A supervisor reviews attendance, an administrator manages sites, and a field user only needs the screens for their shift. When the same product ships as a React admin dashboard and a React Native app, access rules tend to drift unless they live in one place.
+
+This is the approach I use: keep the **permission model** in a small shared module, keep **token handling** in one place, and make routes and buttons ask the same question.
+
+## Start with permissions, not roles
+
+Roles change more often than features. If components check `role === "admin"`, every new role means hunting through the codebase. Instead, map roles to permissions once and let the UI check permissions.
+
+```ts
+// permissions.ts — shared by web and mobile
+export type Role = "admin" | "supervisor" | "field";
+
+export type Permission =
+  | "attendance:review"
+  | "sites:manage"
+  | "issues:create"
+  | "reports:export";
+
+const rolePermissions: Record<Role, Permission[]> = {
+  admin: ["attendance:review", "sites:manage", "issues:create", "reports:export"],
+  supervisor: ["attendance:review", "issues:create", "reports:export"],
+  field: ["issues:create"],
+};
+
+export function can(role: Role | undefined, permission: Permission) {
+  return role ? rolePermissions[role].includes(permission) : false;
+}
+```
+
+The backend still enforces access — the frontend check is about showing the right UI, not security.
+
+## Keep the session in Redux Toolkit
+
+The decoded session (user id, role, token expiry) belongs in global state so every screen reads the same value. The token itself goes to secure storage on mobile and an httpOnly cookie or memory on the web, depending on the API.
+
+```ts
+// authSlice.ts
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { Role } from "./permissions";
+
+type AuthState = { userId: string | null; role: Role | undefined; expiresAt: number | null };
+
+const initialState: AuthState = { userId: null, role: undefined, expiresAt: null };
+
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {
+    sessionStarted(state, action: PayloadAction<AuthState>) {
+      return action.payload;
+    },
+    sessionEnded() {
+      return initialState;
+    },
+  },
+});
+
+export const { sessionStarted, sessionEnded } = authSlice.actions;
+export default authSlice.reducer;
+```
+
+## Protected routes on the web
+
+With React Router, a wrapper route checks the session and the permission before rendering its children. Unauthenticated users go to login with a return path; authenticated users without permission see a clear "no access" page instead of a blank screen.
+
+```tsx
+function RequirePermission({ permission }: { permission: Permission }) {
+  const { role, expiresAt } = useAppSelector((state) => state.auth);
+  const location = useLocation();
+
+  if (!role || (expiresAt && expiresAt < Date.now())) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  if (!can(role, permission)) {
+    return <NoAccess />;
+  }
+  return <Outlet />;
+}
+```
+
+## The same rule in React Native
+
+In React Navigation, the cleanest approach is to only register the screens a user can reach. A field user's navigator simply doesn't contain the admin screens, so there's no route to guard.
+
+```tsx
+function AppNavigator() {
+  const role = useAppSelector((state) => state.auth.role);
+
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Home" component={HomeScreen} />
+      {can(role, "attendance:review") && (
+        <Stack.Screen name="AttendanceReview" component={AttendanceReviewScreen} />
+      )}
+      {can(role, "sites:manage") && (
+        <Stack.Screen name="Sites" component={SitesScreen} />
+      )}
+    </Stack.Navigator>
+  );
+}
+```
+
+## Handle expiry in one place
+
+An Axios response interceptor is the single place that reacts to a `401`: it clears the session, and the routing rules above take the user back to login. No screen needs its own expiry logic.
+
+```ts
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      store.dispatch(sessionEnded());
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+## Checklist
+
+- Permissions are defined once and shared by web and mobile.
+- Components check permissions, never raw role names.
+- Unauthorized users get a clear message, not an empty screen.
+- Token expiry is handled by one interceptor.
+- The API enforces every rule the UI hides.

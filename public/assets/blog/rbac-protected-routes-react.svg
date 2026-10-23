@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Role-Based Access in React">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E879F9" stop-opacity="0.32"/>
+      <stop offset="0.5" stop-color="#111827"/>
+      <stop offset="1" stop-color="#EAB308" stop-opacity="0.22"/>
+    </linearGradient>
+    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
+      <path d="M42 0H0V42" fill="none" stroke="#334155" stroke-opacity="0.35"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="#0B1020"/>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)" opacity="0.55"/>
+  <rect x="64" y="58" width="1072" height="559" rx="30" fill="#111827" fill-opacity="0.9" stroke="#334155" stroke-width="2"/>
+  <rect x="96" y="100" width="270" height="50" rx="25" fill="#E879F9" fill-opacity="0.16" stroke="#E879F9" stroke-opacity="0.8"/>
+  <text x="126" y="133" fill="#E879F9" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="800">Auth &amp; Security</text>
+  <text x="96" y="230" fill="#F8FAFC" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">Role-Based Access in</text><text x="96" y="294" fill="#F8FAFC" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">React</text>
+  <text x="96" y="368" fill="#94A3B8" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="24">Protected routes and permission checks</text><text x="96" y="402" fill="#94A3B8" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="24">across web and mobile</text>
+  <g transform="translate(760 150)">
+  <path d="M165 10 L300 60 V180 C300 270 240 330 165 360 C90 330 30 270 30 180 V60 Z" fill="#0B1020" stroke="#E879F9" stroke-width="5"/>
+  <rect x="120" y="160" width="90" height="80" rx="12" fill="#E879F9"/>
+  <path d="M135 160 V130 A30 30 0 0 1 195 130 V160" fill="none" stroke="#E879F9" stroke-width="10"/>
+  <circle cx="165" cy="198" r="10" fill="#0B1020"/></g>
+</svg>

@@ -1,0 +1,114 @@
+---
+title: "FlatList Tuning for Field Operations Apps"
+description: "How memoized rows, stable keys, fixed item layouts, and sensible pagination keep long React Native lists smooth on everyday Android phones."
+date: 2026-10-14
+category: "React Native"
+tags: ["React Native", "Performance", "FlatList"]
+keywords: ["FlatList performance", "React Native list optimization", "getItemLayout", "React.memo FlatList"]
+readingTime: "5 min read"
+image: /assets/blog/flatlist-performance-field-apps.svg
+imageAlt: "Phone illustration showing a long list of field tasks"
+draft: true
+slug: flatlist-performance-field-apps
+---
+
+Field apps are list-heavy: patrol checkpoints, attendance logs, inspection items, open issues. Users scroll them all day on mid-range Android devices, often with poor connectivity. A list that stutters there feels broken, even if it's fine on a development machine.
+
+These are the FlatList adjustments I reach for first, in roughly the order they pay off.
+
+## 1. Make rows cheap to re-render
+
+Every parent state change re-renders every visible row unless the row is memoized and receives stable props.
+
+```tsx
+type Row = { id: string; title: string; status: "open" | "done" };
+
+const TaskRow = React.memo(function TaskRow({
+  item,
+  onPress,
+}: {
+  item: Row;
+  onPress: (id: string) => void;
+}) {
+  return (
+    <Pressable onPress={() => onPress(item.id)} style={styles.row}>
+      <Text style={styles.title}>{item.title}</Text>
+      <StatusBadge status={item.status} />
+    </Pressable>
+  );
+});
+```
+
+The parent passes a `useCallback` handler and a `renderItem` that doesn't change on every render:
+
+```tsx
+const handlePress = useCallback((id: string) => navigation.navigate("Task", { id }), [navigation]);
+const renderItem = useCallback(
+  ({ item }: { item: Row }) => <TaskRow item={item} onPress={handlePress} />,
+  [handlePress]
+);
+```
+
+## 2. Use stable keys
+
+`keyExtractor` should return the record's id. Index-based keys make React remount rows when items are inserted or filtered, which costs time and can show the wrong data briefly.
+
+```tsx
+<FlatList data={tasks} keyExtractor={(item) => item.id} renderItem={renderItem} />
+```
+
+## 3. Tell FlatList the row height when you know it
+
+If rows have a fixed height, `getItemLayout` lets FlatList skip measurement and makes `scrollToIndex` reliable.
+
+```tsx
+const ROW_HEIGHT = 72;
+
+<FlatList
+  getItemLayout={(_, index) => ({ length: ROW_HEIGHT, offset: ROW_HEIGHT * index, index })}
+  /* ... */
+/>
+```
+
+## 4. Tune the render window
+
+The defaults favor smoothness on fast devices. On heavier screens I lower the batch sizes and window so less work happens per frame:
+
+```tsx
+<FlatList
+  initialNumToRender={12}
+  maxToRenderPerBatch={8}
+  windowSize={7}
+  removeClippedSubviews
+  /* ... */
+/>
+```
+
+Measure before and after — these numbers depend on how expensive a row is.
+
+## 5. Paginate without duplicate requests
+
+`onEndReached` can fire more than once near the end of the list. Guard it with the request state so a slow network doesn't trigger the same page twice.
+
+```tsx
+const onEndReached = useCallback(() => {
+  if (status !== "loading" && hasMore) {
+    dispatch(fetchNextPage());
+  }
+}, [status, hasMore, dispatch]);
+
+<FlatList onEndReached={onEndReached} onEndReachedThreshold={0.4} /* ... */ />
+```
+
+## 6. Design the empty, loading, and error states
+
+`ListEmptyComponent` and `ListFooterComponent` keep these states inside the list, so the layout doesn't jump when data arrives — and field users can tell the difference between "nothing assigned" and "still loading".
+
+## Checklist
+
+- Rows are wrapped in `React.memo` and receive stable callbacks.
+- `keyExtractor` returns a real id.
+- Fixed-height rows provide `getItemLayout`.
+- Render-window props are tuned against a real device.
+- Pagination is guarded against duplicate requests.
+- Empty, loading, and error states are part of the list.

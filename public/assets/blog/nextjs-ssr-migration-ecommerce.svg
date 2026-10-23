@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Moving an E-commerce App to Next.js SSR">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F97316" stop-opacity="0.32"/>
+      <stop offset="0.5" stop-color="#111827"/>
+      <stop offset="1" stop-color="#EAB308" stop-opacity="0.22"/>
+    </linearGradient>
+    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
+      <path d="M42 0H0V42" fill="none" stroke="#334155" stroke-opacity="0.35"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="#0B1020"/>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)" opacity="0.55"/>
+  <rect x="64" y="58" width="1072" height="559" rx="30" fill="#111827" fill-opacity="0.9" stroke="#334155" stroke-width="2"/>
+  <rect x="96" y="100" width="158" height="50" rx="25" fill="#F97316" fill-opacity="0.16" stroke="#F97316" stroke-opacity="0.8"/>
+  <text x="126" y="133" fill="#F97316" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="800">Next.js</text>
+  <text x="96" y="230" fill="#F8FAFC" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">Moving an E-commerce</text><text x="96" y="294" fill="#F8FAFC" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">App to Next.js SSR</text>
+  <text x="96" y="368" fill="#94A3B8" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="24">A practical migration path from a</text><text x="96" y="402" fill="#94A3B8" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="24">client-rendered React app</text>
+  <g transform="translate(760 150)"><rect x="20" y="40" width="290" height="76" rx="14" fill="#0B1020" stroke="#334155" stroke-width="3"/><circle cx="56" cy="78" r="10" fill="#F97316"/><rect x="84" y="72" width="180" height="12" rx="6" fill="#334155"/><rect x="20" y="140" width="290" height="76" rx="14" fill="#0B1020" stroke="#334155" stroke-width="3"/><circle cx="56" cy="178" r="10" fill="#22C55E"/><rect x="84" y="172" width="150" height="12" rx="6" fill="#334155"/><rect x="20" y="240" width="290" height="76" rx="14" fill="#0B1020" stroke="#334155" stroke-width="3"/><circle cx="56" cy="278" r="10" fill="#F97316"/><rect x="84" y="272" width="120" height="12" rx="6" fill="#334155"/></g>
+</svg>
