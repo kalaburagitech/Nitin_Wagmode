@@ -12,7 +12,7 @@ import { profile } from "@/data/profile";
 
 export const metadata = generateMetadata({
   title: "Blog",
-  description: `Technical articles by ${profile.fullName} on React, Next.js, React Native, TypeScript, state management, API integration, and frontend performance.`,
+  description: `Frontend guides by ${profile.fullName} on UI/UX, website performance, responsive design, React, Next.js, TypeScript, the MERN stack, and API testing.`,
   path: "/blog",
   keywords: ["React Blog", "Next.js Blog", "React Native Blog", "Frontend Engineering Blog"],
   type: "website",
@@ -33,7 +33,7 @@ export default function BlogPage() {
     "@type": "Blog",
     name: `${profile.fullName} Blog`,
     description:
-      "Technical articles about React, Next.js, React Native, TypeScript, and frontend engineering.",
+      "Practical guides on UI/UX, website performance, responsive design, React, TypeScript, and full-stack development.",
     url: `${BLOG_BASE_URL}/blog`,
     author: {
       "@type": "Person",
@@ -58,8 +58,8 @@ export default function BlogPage() {
       <PageHeader
         crumbs={[{ label: "Blog" }]}
         eyebrow="Writing"
-        title="Notes from real builds"
-        intro="Articles on React, Next.js, React Native, TypeScript, Redux Toolkit, API integration, and frontend performance."
+        title="Frontend guides and notes"
+        intro="Practical guides on UI/UX, website performance, responsive design, React, TypeScript, and full-stack development."
       />
       <section className="shell py-16">
         <BlogIndex posts={postSummaries} categories={categories} />
