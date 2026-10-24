@@ -179,6 +179,21 @@ BLOG_COVERS = [
     ("json-driven-ui-rendering-engine", "JSON-Driven UI Rendering", "React + TypeScript", "Turning configuration into typed, reusable components", "#A855F7", motif_json),
     ("offline-sync-react-native", "Offline Sync in React Native", "React Native", "Queueing field data until the network comes back", "#22C55E", motif_sync),
     ("nextjs-ssr-migration-ecommerce", "Moving an E-commerce App to Next.js SSR", "Next.js", "A practical migration path from a client-rendered React app", "#F97316", motif_server),
+    ("reusable-ui-components-react", "Reusable UI Components in React", "UI/UX", "Small APIs, composition, and accessible defaults", "#2DD4BF", motif_json),
+    ("design-systems-consistent-interfaces", "Design Systems for Consistent UI", "UI/UX", "Tokens, components, and guidelines that keep interfaces aligned", "#818CF8", motif_dashboard),
+    ("ui-designs-to-responsive-react-components", "From UI Design to Responsive React", "UI/UX", "Component trees, Flexbox, Grid, and real-world content", "#F472B6", motif_dashboard),
+    ("practical-ui-improvements-typography-spacing-color", "Typography, Spacing, Color, Hierarchy", "UI/UX", "Practical UI improvements developers can apply in CSS", "#FBBF24", motif_dashboard),
+    ("core-web-vitals-frontend-developers", "Understanding Core Web Vitals", "Performance", "LCP, INP, and CLS explained for frontend developers", "#22C55E", motif_dashboard),
+    ("improve-lighthouse-performance-score", "Improving Lighthouse Performance", "Performance", "Reading the report and fixing what matters", "#F97316", motif_dashboard),
+    ("nextjs-image-optimization-lazy-loading-code-splitting", "Images, Lazy Loading, Code Splitting", "Next.js", "Loading less, and loading it at the right time", "#38BDF8", motif_server),
+    ("getting-started-with-react", "Getting Started with React.js", "React", "Components, props, state, and events from the ground up", "#61DAFB", motif_json),
+    ("react-hooks-state-management-patterns", "React Hooks & State Management", "React", "Practical patterns for where state should live", "#A855F7", motif_sync),
+    ("typescript-best-practices-react", "TypeScript Best Practices for React", "TypeScript", "Typed props, events, states, and API data", "#3178C6", motif_json),
+    ("mobile-first-responsive-websites", "Mobile-First Responsive Websites", "Responsive Design", "Fluid layouts, media queries, and touch-friendly UI", "#2DD4BF", motif_phone),
+    ("react-vs-react-native", "React.js vs React Native", "React Native", "Key differences, shared code, and when to use each", "#61DAFB", motif_phone),
+    ("introduction-to-mern-stack", "Introduction to the MERN Stack", "Full-Stack", "MongoDB, Express.js, React, and Node.js working together", "#47A248", motif_server),
+    ("test-rest-apis-with-postman", "Testing REST APIs with Postman", "API Testing", "Collections, variables, test scripts, and automation", "#FF6C37", motif_server),
+    ("mongodb-vs-firebase", "MongoDB vs Firebase", "Databases", "Choosing the right data solution for your app", "#FFCA28", motif_store),
 ]
 
 

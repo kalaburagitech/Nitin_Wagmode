@@ -34,7 +34,8 @@ export const profile = {
   workPreference: "Open to relocation across India and remote work",
   available: true,
   currentCompany: "Kalaburagi Tech",
-  resumeUrl: "/resume.pdf",
+  resumeUrl: "/Nitin_Wagmode.pdf",
+  resumeFileName: "Nitin_Wagmode.pdf",
   // Background-removed portrait (transparent WebP) and a square version on
   // a branded backdrop for avatars and social cards.
   profileImageUrl: "/assets/profile.webp",

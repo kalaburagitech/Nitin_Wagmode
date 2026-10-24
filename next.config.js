@@ -29,6 +29,16 @@ const nextConfig = {
         ],
       },
       {
+        // Name the file when it's saved from the browser's PDF viewer too.
+        source: "/Nitin_Wagmode.pdf",
+        headers: [
+          {
+            key: "Content-Disposition",
+            value: 'inline; filename="Nitin_Wagmode.pdf"',
+          },
+        ],
+      },
+      {
         // Long-lived but revalidating: asset filenames aren't content-hashed,
         // so `immutable` would pin stale images after a redeploy.
         source: "/assets/(.*)",
@@ -40,6 +50,11 @@ const nextConfig = {
         ],
       },
     ];
+  },
+
+  async redirects() {
+    // Keep previously shared résumé links working.
+    return [{ source: "/resume.pdf", destination: "/Nitin_Wagmode.pdf", permanent: true }];
   },
 
   images: {

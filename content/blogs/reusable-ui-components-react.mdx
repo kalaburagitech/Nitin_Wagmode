@@ -1,0 +1,150 @@
+---
+title: "Building Reusable UI Components in React"
+description: "How to design React components that are easy to reuse: clear props, composition over configuration, variants, accessibility built in, and when not to abstract."
+date: 2026-10-24
+category: "UI/UX"
+tags: ["React", "UI Components", "Component Design", "Accessibility"]
+keywords: ["reusable React components", "React component design", "React composition", "React button component", "component API design"]
+readingTime: "5 min read"
+image: /assets/blog/reusable-ui-components-react.svg
+imageAlt: "Stacked interface blocks representing reusable React components"
+draft: true
+slug: reusable-ui-components-react
+---
+
+Most React codebases end up with three slightly different buttons, two modal implementations, and a card component nobody wants to touch. Reusable components fix that, but only if they are designed for reuse from the start. A component that tries to handle every case through props becomes as hard to maintain as the copies it replaced.
+
+This guide covers the habits that make components genuinely reusable: small APIs, composition, consistent variants, and accessibility that comes for free.
+
+## Start from repeated UI, not imagined UI
+
+The best time to extract a component is when you have seen the same pattern at least twice. Building a "universal" component before you know how it will be used usually produces props nobody needs.
+
+Before extracting, compare the copies and ask:
+
+- Which parts are identical in every copy?
+- Which parts differ, and are those differences meaningful (a destructive button) or accidental (a padding of 14px instead of 16px)?
+- Who will use this component, and what will they want to change?
+
+Accidental differences should disappear. Meaningful differences become props or variants.
+
+## Keep the props small and predictable
+
+A good component API reads like plain English. Compare these two buttons:
+
+```jsx
+<Button primary large danger rounded iconLeft={<TrashIcon />} />
+
+<Button variant="danger" size="lg">
+  <TrashIcon aria-hidden="true" /> Delete
+</Button>
+```
+
+The second version has fewer props, and the props that exist are mutually exclusive by design. `variant` can only be one value, so you can never ask for a button that is both `primary` and `danger`.
+
+Some guidelines for props:
+
+- Prefer one `variant` prop over several boolean flags.
+- Use `children` for content instead of `label`, `text`, or `title` props.
+- Pass unknown props through to the underlying element so consumers can add `aria-*`, `data-*`, or event handlers.
+- Name props after what they mean (`size="sm"`), not what they do internally (`padding="8px"`).
+
+## A practical Button
+
+Here is a small, reusable button that follows those rules:
+
+```jsx
+const variants = {
+  primary: "bg-blue-600 text-white hover:bg-blue-700",
+  secondary: "border border-gray-300 text-gray-900 hover:bg-gray-50",
+  danger: "bg-red-600 text-white hover:bg-red-700",
+};
+
+const sizes = {
+  sm: "h-8 px-3 text-sm",
+  md: "h-10 px-4 text-sm",
+  lg: "h-12 px-6 text-base",
+};
+
+export function Button({ variant = "primary", size = "md", className = "", type = "button", ...props }) {
+  return (
+    <button
+      type={type}
+      className={`inline-flex items-center gap-2 rounded-md font-medium focus-visible:outline focus-visible:outline-2 disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
+      {...props}
+    />
+  );
+}
+```
+
+A few details matter here. `type="button"` is the default, so the button never submits a form by accident. The rest of the props are spread onto the real `<button>`, so `disabled`, `onClick`, and `aria-label` all work without extra code. And `className` is still accepted for the rare layout tweak, such as margin, without adding a prop for it.
+
+## Prefer composition over configuration
+
+When a component starts growing props like `headerTitle`, `headerIcon`, `footerText`, and `showFooter`, it is asking to be split into smaller pieces that compose:
+
+```jsx
+<Card>
+  <Card.Header>
+    <Card.Title>Team members</Card.Title>
+  </Card.Header>
+  <Card.Body>{/* anything */}</Card.Body>
+  <Card.Footer>
+    <Button size="sm">Invite</Button>
+  </Card.Footer>
+</Card>
+```
+
+Each part is simple, and consumers decide the structure. Adding a badge to the header no longer requires a new prop; you just put the badge there.
+
+Composition also makes testing easier, because each piece has fewer branches.
+
+## Build accessibility into the component
+
+Reusable components are the best place to solve accessibility once. If the shared `Modal` traps focus, closes on Escape, and returns focus to the trigger, every screen that uses it gets that behavior.
+
+Common things to bake in:
+
+- Use the right native element. A `<button>` gets keyboard support and a role for free; a clickable `<div>` gets neither.
+- Keep a visible focus style. Never remove outlines without providing a replacement.
+- Associate labels with inputs, and connect error messages with `aria-describedby`.
+- Hide decorative icons from assistive technology with `aria-hidden="true"`, and give icon-only buttons an `aria-label`.
+
+```jsx
+export function TextField({ id, label, error, ...props }) {
+  const errorId = error ? `${id}-error` : undefined;
+  return (
+    <div>
+      <label htmlFor={id}>{label}</label>
+      <input id={id} aria-invalid={Boolean(error)} aria-describedby={errorId} {...props} />
+      {error && <p id={errorId}>{error}</p>}
+    </div>
+  );
+}
+```
+
+## Let styles come from tokens
+
+Hard-coded colors and spacing make components hard to reuse across themes. Read them from shared design tokens instead, such as CSS custom properties or a Tailwind theme, so a dark mode or rebrand changes one file instead of every component. The article on design systems in this blog covers tokens in more depth.
+
+## Know when not to abstract
+
+Not every repeated block should become a shared component. Two pieces of UI can look alike today and need to change in different directions tomorrow. If you find yourself adding a prop just to switch off behavior for one caller, the abstraction may be wrong.
+
+A useful rule: shared components should be stable and boring. Feature-specific UI can stay inside the feature folder until it proves it is reused.
+
+## Document with examples
+
+A component is only reusable if people can find it and understand it. Even a simple page or Storybook story showing each variant, size, and state (default, hover, disabled, loading, error) saves teams from rebuilding what already exists.
+
+## Key takeaways
+
+- Extract components from real repetition, not guesses.
+- Keep APIs small: a `variant` prop, `children` for content, and pass-through props.
+- Compose small parts instead of piling on configuration props.
+- Solve accessibility once, inside the shared component.
+- Style from tokens so components survive theme changes.
+
+## Conclusion
+
+Reusable components are less about clever abstractions and more about discipline: small APIs, predictable behavior, and accessible defaults. Start with the components you already repeat, such as buttons, inputs, and cards, and improve them one at a time.

@@ -1,0 +1,225 @@
+---
+title: "TypeScript Best Practices for React Applications"
+description: "Practical TypeScript patterns for React: typing props and children, events, state, refs, reusable components, discriminated unions, API data, and strict compiler settings."
+date: 2026-10-24
+category: "React"
+tags: ["TypeScript", "React", "Type Safety"]
+keywords: ["TypeScript React best practices", "React props TypeScript", "discriminated unions React", "React event types TypeScript", "typing API responses"]
+readingTime: "5 min read"
+image: /assets/blog/typescript-best-practices-react.svg
+imageAlt: "TypeScript type annotations beside React components"
+draft: true
+slug: typescript-best-practices-react
+---
+
+TypeScript helps React teams catch mistakes before they reach the browser: a missing prop, a misspelled field, or a value that might be `undefined`. It is most helpful when types describe the real shape of your data and components, without excessive annotations.
+
+These patterns cover the situations that come up most in React projects.
+
+## Turn on strict mode
+
+Start with strict type checking in `tsconfig.json`. It enables `strictNullChecks`, `noImplicitAny`, and related checks that catch the most bugs:
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true
+  }
+}
+```
+
+`noUncheckedIndexedAccess` is optional but useful: it makes `array[0]` and `record[key]` possibly `undefined`, which matches what can really happen at runtime.
+
+## Typing props
+
+Describe props with a `type` or `interface` and annotate the parameter directly:
+
+```tsx
+type UserCardProps = {
+  name: string;
+  email: string;
+  role?: "admin" | "member"; // optional, and only these values
+  onSelect: (email: string) => void;
+};
+
+export function UserCard({ name, email, role = "member", onSelect }: UserCardProps) {
+  return (
+    <button type="button" onClick={() => onSelect(email)}>
+      {name} ({role})
+    </button>
+  );
+}
+```
+
+Union types of string literals, like `"admin" | "member"`, are clearer and safer than a plain `string`.
+
+## Typing children
+
+Use `React.ReactNode` for anything React can render:
+
+```tsx
+import type { ReactNode } from "react";
+
+type PanelProps = {
+  title: string;
+  children: ReactNode;
+};
+```
+
+Annotating the props parameter directly, as above, is generally preferred over `React.FC`, because it is explicit and works the same as typing any other function.
+
+## Extending native elements
+
+Reusable components often wrap a native element. Extend its props so consumers can still pass `disabled`, `aria-*`, and event handlers:
+
+```tsx
+import type { ComponentPropsWithoutRef } from "react";
+
+type ButtonProps = ComponentPropsWithoutRef<"button"> & {
+  variant?: "primary" | "secondary";
+};
+
+export function Button({ variant = "primary", type = "button", ...props }: ButtonProps) {
+  return <button type={type} data-variant={variant} {...props} />;
+}
+```
+
+## Typing events
+
+React provides event types for each kind of element. Inline handlers infer them automatically; separate handlers need an annotation:
+
+```tsx
+import type { ChangeEvent, FormEvent } from "react";
+
+function handleChange(event: ChangeEvent<HTMLInputElement>) {
+  console.log(event.target.value);
+}
+
+function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  event.preventDefault();
+}
+```
+
+## Typing state
+
+`useState` infers types from the initial value. Add a type when the initial value does not describe every possibility:
+
+```tsx
+const [count, setCount] = useState(0); // number, inferred
+
+type User = { id: string; name: string };
+const [user, setUser] = useState<User | null>(null); // starts empty
+```
+
+## Typing refs
+
+For DOM refs, pass the element type and `null` as the initial value:
+
+```tsx
+const inputRef = useRef<HTMLInputElement>(null);
+
+function focusInput() {
+  inputRef.current?.focus();
+}
+```
+
+## Model states with discriminated unions
+
+Separate boolean flags (`isLoading`, `isError`, `data`) allow impossible combinations. A discriminated union makes each state explicit, and TypeScript narrows the type when you check the shared field:
+
+```tsx
+type RequestState<T> =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "success"; data: T }
+  | { status: "error"; message: string };
+
+function UserList({ state }: { state: RequestState<User[]> }) {
+  switch (state.status) {
+    case "loading":
+      return <p>Loading…</p>;
+    case "error":
+      return <p role="alert">{state.message}</p>;
+    case "success":
+      return (
+        <ul>
+          {state.data.map((user) => (
+            <li key={user.id}>{user.name}</li>
+          ))}
+        </ul>
+      );
+    default:
+      return null;
+  }
+}
+```
+
+`state.data` is only available in the `"success"` branch, so you cannot accidentally read data that does not exist.
+
+## Generic components
+
+Generics let one component work with different data types while keeping type safety:
+
+```tsx
+type ListProps<T> = {
+  items: T[];
+  getKey: (item: T) => string;
+  renderItem: (item: T) => ReactNode;
+};
+
+export function List<T>({ items, getKey, renderItem }: ListProps<T>) {
+  return <ul>{items.map((item) => <li key={getKey(item)}>{renderItem(item)}</li>)}</ul>;
+}
+```
+
+## API data: types are not validation
+
+TypeScript types disappear at runtime. Writing `const user = (await response.json()) as User` tells the compiler to trust the data, but does not check it.
+
+For data from outside your app, such as APIs, forms, or local storage, consider runtime validation with a schema library such as Zod, which can also produce the TypeScript type:
+
+```ts
+import { z } from "zod";
+
+const UserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+});
+
+type User = z.infer<typeof UserSchema>;
+
+async function fetchUser(id: string): Promise<User> {
+  const response = await fetch(`/api/users/${id}`);
+  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+  return UserSchema.parse(await response.json());
+}
+```
+
+## Avoid escape hatches
+
+A few habits keep types trustworthy:
+
+- Prefer `unknown` over `any` for values you have not checked yet, and narrow them before use.
+- Avoid non-null assertions (`value!`) unless you are certain; handle the `null` case instead.
+- Use `satisfies` to check that an object matches a type while keeping its precise inferred type:
+
+```ts
+const routes = {
+  home: "/",
+  blog: "/blog",
+} satisfies Record<string, string>;
+```
+
+## Key takeaways
+
+- Enable `strict` mode from the start.
+- Type props directly and use literal unions for limited options.
+- Extend native element props for reusable components.
+- Use discriminated unions to model loading, success, and error states.
+- Validate external data at runtime; types alone do not check it.
+
+## Conclusion
+
+TypeScript in React works best when types describe reality: the props a component accepts, the states it can be in, and the data it receives. With strict settings and a few consistent patterns, types become documentation that the compiler checks for you.

@@ -1,0 +1,256 @@
+---
+title: "Introduction to the MERN Stack"
+description: "What MongoDB, Express.js, React, and Node.js each do, how they work together, and a minimal example of a REST API with Mongoose connected to a React frontend."
+date: 2026-10-24
+category: "Full-Stack"
+tags: ["MERN Stack", "MongoDB", "Express.js", "React", "Node.js"]
+keywords: ["MERN stack tutorial", "MongoDB Express React Node", "Express REST API Mongoose", "full stack JavaScript", "MERN for beginners"]
+readingTime: "6 min read"
+image: /assets/blog/introduction-to-mern-stack.svg
+imageAlt: "Four connected layers representing MongoDB, Express, React, and Node.js"
+draft: true
+slug: introduction-to-mern-stack
+---
+
+MERN is a popular set of technologies for building full-stack web applications entirely in JavaScript:
+
+- **M**ongoDB: a document database
+- **E**xpress.js: a web framework for Node.js
+- **R**eact: a library for building user interfaces
+- **N**ode.js: a JavaScript runtime for running code on the server
+
+Because every layer uses JavaScript (or TypeScript), one developer or team can work across the frontend, backend, and data layer without switching languages.
+
+## How the pieces fit together
+
+A typical request flows like this:
+
+1. The user interacts with the **React** app in the browser.
+2. React sends an HTTP request to an API, for example `GET /api/tasks`.
+3. An **Express** server running on **Node.js** receives the request and runs the matching route.
+4. The route reads or writes data in **MongoDB**.
+5. Express sends a JSON response, and React updates the UI.
+
+The frontend and backend communicate only through the API, so each can be developed, tested, and deployed separately.
+
+## MongoDB
+
+MongoDB stores data as documents, which look like JSON objects, grouped into collections:
+
+```json
+{
+  "_id": "665f1c2e9b1e8a3d4c2b1a90",
+  "title": "Write project README",
+  "done": false,
+  "createdAt": "2026-10-20T09:30:00.000Z"
+}
+```
+
+Documents in the same collection do not need identical fields, which makes it easy to change data shapes as an app evolves. MongoDB can run locally or as a managed service such as MongoDB Atlas.
+
+Mongoose is a popular library for working with MongoDB in Node.js. It adds schemas, validation, and a convenient query API.
+
+## Node.js and Express
+
+Node.js runs JavaScript outside the browser. Express is a minimal framework on top of Node.js for defining routes and middleware.
+
+## A minimal backend
+
+Set up a project and install dependencies:
+
+```bash
+mkdir mern-tasks-api && cd mern-tasks-api
+npm init -y
+npm install express mongoose cors dotenv
+```
+
+Define a model with Mongoose:
+
+```js
+// models/Task.js
+const mongoose = require("mongoose");
+
+const taskSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true, maxlength: 200 },
+    done: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Task", taskSchema);
+```
+
+Create the server with a few REST routes:
+
+```js
+// server.js
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const Task = require("./models/Task");
+
+const app = express();
+app.use(express.json());
+app.use(cors({ origin: process.env.CLIENT_ORIGIN }));
+
+app.get("/api/tasks", async (req, res, next) => {
+  try {
+    const tasks = await Task.find().sort({ createdAt: -1 });
+    res.json(tasks);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/tasks", async (req, res, next) => {
+  try {
+    const task = await Task.create({ title: req.body.title });
+    res.status(201).json(task);
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ error: "Title is required." });
+    }
+    next(error);
+  }
+});
+
+app.patch("/api/tasks/:id", async (req, res, next) => {
+  try {
+    const task = await Task.findByIdAndUpdate(
+      req.params.id,
+      { done: Boolean(req.body.done) },
+      { new: true, runValidators: true }
+    );
+    if (!task) return res.status(404).json({ error: "Task not found." });
+    res.json(task);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Central error handler: log details on the server, send a generic message
+app.use((error, req, res, next) => {
+  console.error(error);
+  res.status(500).json({ error: "Something went wrong." });
+});
+
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => app.listen(process.env.PORT || 4000, () => console.log("API running")))
+  .catch((error) => {
+    console.error("Database connection failed", error);
+    process.exit(1);
+  });
+```
+
+Keep the connection string in an `.env` file that is excluded from version control:
+
+```bash
+# .env (never commit this file)
+MONGODB_URI=mongodb://127.0.0.1:27017/mern-tasks
+CLIENT_ORIGIN=http://localhost:5173
+PORT=4000
+```
+
+A few practices in this example are worth keeping:
+
+- `express.json()` parses JSON request bodies.
+- `cors` allows only your frontend's origin to call the API from a browser.
+- Validation happens on the server; the frontend's checks are for user experience only.
+- Errors return generic messages, so internal details are not exposed to users.
+
+## The React frontend
+
+On the frontend, React fetches data from the API and renders it:
+
+```jsx
+import { useEffect, useState } from "react";
+
+const API_URL = import.meta.env.VITE_API_URL; // e.g. http://localhost:4000
+
+export default function Tasks() {
+  const [tasks, setTasks] = useState([]);
+  const [title, setTitle] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/tasks`)
+      .then((response) => response.json())
+      .then(setTasks)
+      .catch(() => setError("Could not load tasks."));
+  }, []);
+
+  async function addTask(event) {
+    event.preventDefault();
+    const response = await fetch(`${API_URL}/api/tasks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    });
+    if (!response.ok) return setError("Could not add task.");
+    const task = await response.json();
+    setTasks((previous) => [task, ...previous]);
+    setTitle("");
+  }
+
+  return (
+    <main>
+      <form onSubmit={addTask}>
+        <label htmlFor="title">New task</label>
+        <input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <button type="submit">Add</button>
+      </form>
+      {error && <p role="alert">{error}</p>}
+      <ul>
+        {tasks.map((task) => (
+          <li key={task._id}>{task.title}</li>
+        ))}
+      </ul>
+    </main>
+  );
+}
+```
+
+## Project structure
+
+As the app grows, separate concerns into folders:
+
+```text
+server/
+  models/        Mongoose schemas
+  routes/        Express routers
+  middleware/    Auth, validation, error handling
+  server.js
+client/
+  src/
+    components/
+    pages/
+    api/         Functions that call the backend
+```
+
+## What to add next
+
+The example above is intentionally minimal. Real applications usually also need:
+
+- **Authentication**: for example, sessions or JSON Web Tokens, with passwords hashed using a library like bcrypt.
+- **Input validation**: a schema library such as Zod or Joi on the server.
+- **Security middleware**: rate limiting and secure HTTP headers (for example, with Helmet).
+- **Testing**: API tests with tools like Jest and Supertest, and component tests with React Testing Library.
+- **Deployment**: hosting for the API and frontend, and a managed database.
+
+## Strengths and trade-offs
+
+MERN is a good fit for many web apps, especially when you want one language across the stack and flexible data models. Like any stack, it involves trade-offs. Highly relational data with complex joins and strict transactional requirements may be modeled more naturally in a relational database such as PostgreSQL or MySQL, although MongoDB does support multi-document transactions. Choose based on your data and requirements rather than the stack's popularity.
+
+## Key takeaways
+
+- MERN combines MongoDB, Express.js, React, and Node.js, all using JavaScript.
+- React talks to an Express API over HTTP; Express reads and writes MongoDB.
+- Mongoose adds schemas and validation on top of MongoDB.
+- Validate on the server, keep secrets in environment variables, and avoid leaking error details.
+
+## Conclusion
+
+The MERN stack is a practical way to learn how a full web application fits together, from the database to the UI. Building a small project, such as a task manager or notes app, is the best way to understand each layer and how they communicate.

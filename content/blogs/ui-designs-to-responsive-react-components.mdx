@@ -1,0 +1,145 @@
+---
+title: "Turning UI Designs into Responsive React Components"
+description: "A step-by-step workflow for converting a Figma-style design into responsive React components: breaking down the layout, choosing Flexbox or Grid, handling breakpoints, and checking edge cases."
+date: 2026-10-24
+category: "UI/UX"
+tags: ["React", "Responsive Design", "CSS Grid", "Flexbox", "Tailwind CSS"]
+keywords: ["design to code React", "Figma to React", "responsive React components", "CSS Grid vs Flexbox", "Tailwind responsive design"]
+readingTime: "5 min read"
+image: /assets/blog/ui-designs-to-responsive-react-components.svg
+imageAlt: "Design frame being converted into responsive component blocks"
+draft: true
+slug: ui-designs-to-responsive-react-components
+---
+
+A design file shows a few fixed screen sizes. A real browser can be any width, any zoom level, and any font size. Turning a design into components is mostly about filling in the gaps the mockup does not show.
+
+This workflow takes a design from frames to responsive React components.
+
+## 1. Read the design before writing code
+
+Spend a few minutes studying the design as a system rather than as pixels:
+
+- Which elements repeat? Cards, list rows, and buttons usually become components.
+- What is the underlying grid? Many designs use 4, 8, or 12 columns.
+- Which spacing and font sizes appear? These should map to your existing tokens or scale.
+- What happens on mobile? If there is no mobile frame, ask, or decide based on content priority.
+
+If a value is close to an existing token (15px when your scale has 16px), it is usually an accident. Use the token and confirm with the designer if unsure.
+
+## 2. Break the screen into a component tree
+
+Draw boxes around each part of the screen and name them. For a product listing page, the tree might look like this:
+
+```text
+ProductPage
+├── PageHeader (title, breadcrumbs)
+├── FilterBar (category chips, sort select)
+└── ProductGrid
+    └── ProductCard (image, title, price, button)
+```
+
+Build from the inside out: `ProductCard` first, then `ProductGrid`, then the page. Small components are easier to make responsive in isolation.
+
+## 3. Choose Flexbox or Grid
+
+Both are useful, and many layouts need both.
+
+- **Flexbox** is best for one-dimensional layouts: a row of buttons, a navbar, or an icon next to text.
+- **CSS Grid** is best for two-dimensional layouts: card grids, page sections with sidebars, and anything aligned in rows and columns.
+
+A responsive card grid often needs no media queries at all with Grid:
+
+```css
+.product-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+```
+
+Cards fill the row and wrap when there is not enough space for another 16rem column.
+
+## 4. Build mobile first
+
+Write the base styles for the smallest screen, then add styles as space increases. In Tailwind CSS, unprefixed utilities apply to all sizes and prefixes such as `md:` apply from that breakpoint up:
+
+```jsx
+export function ProductCard({ product }) {
+  return (
+    <article className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
+      <img
+        src={product.image}
+        alt={product.name}
+        width={160}
+        height={120}
+        className="aspect-[4/3] w-full rounded-md object-cover sm:w-40"
+      />
+      <div className="flex-1">
+        <h3 className="text-base font-semibold sm:text-lg">{product.name}</h3>
+        <p className="mt-1 text-sm text-gray-600">{product.price}</p>
+      </div>
+      <button type="button" className="h-10 rounded-md bg-blue-600 px-4 text-white">
+        Add to cart
+      </button>
+    </article>
+  );
+}
+```
+
+On small screens the card stacks vertically; from the `sm` breakpoint it becomes a row. The article on mobile-first websites in this blog explains the approach in more detail.
+
+## 5. Let content decide breakpoints
+
+Breakpoints should be where your layout breaks, not where specific devices happen to be. Resize the browser slowly and add a breakpoint when text becomes too long to read comfortably, elements collide, or a column gets too narrow.
+
+For components that live in different containers, such as a card shown in both a sidebar and a main column, container queries respond to the component's own width rather than the viewport. They are supported in all current major browsers:
+
+```css
+.card-wrapper {
+  container-type: inline-size;
+}
+
+@container (min-width: 32rem) {
+  .card {
+    flex-direction: row;
+  }
+}
+```
+
+## 6. Avoid fixed sizes
+
+Fixed widths and heights look right in the mockup and break in the browser. Prefer:
+
+- `max-width` instead of `width` for containers.
+- `min-height` instead of `height`, so content can grow.
+- Relative units (`rem`) for type and spacing, so user font settings are respected.
+- `aspect-ratio` for media, so space is reserved before images load and layout does not shift.
+
+## 7. Test the states the design does not show
+
+Designs usually show ideal content. Real data is messier. Check each component with:
+
+- Very long and very short text, including long words and names.
+- Missing images or optional fields.
+- Loading, empty, and error states.
+- Browser zoom at 200% and a larger default font size.
+- Keyboard navigation and visible focus.
+
+Fixing these during development is much cheaper than after release.
+
+## 8. Compare against the design
+
+Finally, compare your build with the design side by side at the designed widths. Small differences in spacing and alignment add up, so check them. Then check the widths between the designed frames, because that is where most layout bugs hide.
+
+## Key takeaways
+
+- Read the design as a system: repeated components, grid, and scales.
+- Break screens into a component tree and build from the smallest piece.
+- Use Flexbox for one direction, Grid for two, and container queries for reusable components.
+- Write mobile-first styles and place breakpoints where content breaks.
+- Test real-world content and states, not just the ideal mockup.
+
+## Conclusion
+
+A responsive component is a design decision made for every width, not just the ones in the file. With a clear component tree, flexible layout tools, and some testing with messy content, designs translate into interfaces that hold up on real devices.

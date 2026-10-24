@@ -1,0 +1,135 @@
+---
+title: "React.js vs React Native: Key Differences and Use Cases"
+description: "How React for the web and React Native for mobile differ in rendering, styling, navigation, APIs, and deployment, what code can be shared, and when to choose each."
+date: 2026-10-24
+category: "Responsive Design"
+tags: ["React", "React Native", "Mobile Development", "Expo"]
+keywords: ["React vs React Native", "React Native differences", "web vs mobile React", "React Native use cases", "share code React and React Native"]
+readingTime: "5 min read"
+image: /assets/blog/react-vs-react-native.svg
+imageAlt: "A browser window and a phone sharing the same React logo"
+draft: true
+slug: react-vs-react-native
+---
+
+React and React Native share a name, a component model, and many concepts, so it is common to assume they are the same thing for different screens. They are related, but they target different platforms and produce different output. Understanding the differences helps you choose the right tool and move between the two more easily.
+
+## The short version
+
+- **React** (often called React.js) is a library for building user interfaces. On the web, React DOM renders components into HTML elements in a browser.
+- **React Native** is a framework for building mobile apps for iOS and Android (and some other platforms) using React. It renders components to real native UI views, not HTML.
+
+Both use components, props, state, hooks, and JSX. What changes is what those components render to and the platform around them.
+
+## Rendering: HTML vs native views
+
+On the web you use HTML elements:
+
+```jsx
+function Profile({ name }) {
+  return (
+    <div className="profile">
+      <h2>{name}</h2>
+      <button onClick={() => alert("Hi")}>Say hi</button>
+    </div>
+  );
+}
+```
+
+In React Native there is no DOM. You use components provided by React Native, which map to native views on each platform:
+
+```jsx
+import { View, Text, Pressable, Alert, StyleSheet } from "react-native";
+
+function Profile({ name }) {
+  return (
+    <View style={styles.profile}>
+      <Text style={styles.name}>{name}</Text>
+      <Pressable onPress={() => Alert.alert("Hi")} accessibilityRole="button">
+        <Text>Say hi</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  profile: { padding: 16 },
+  name: { fontSize: 20, fontWeight: "600" },
+});
+```
+
+A few rules stand out. All text must be inside a `<Text>` component. `onPress` replaces `onClick`. And there are no `div`, `span`, or `img` tags; you use `View`, `Text`, and `Image`.
+
+## Styling
+
+On the web you have the full power of CSS: stylesheets, selectors, media queries, and tools like Tailwind CSS or CSS Modules.
+
+React Native uses JavaScript style objects with a subset of CSS-like properties written in camelCase. There are no selectors or cascading stylesheets; styles are applied directly to components. Layout uses Flexbox, but with some different defaults; for example, `flexDirection` defaults to `column` rather than `row`. Numbers are density-independent pixels, without units.
+
+Libraries such as NativeWind bring Tailwind-style classes to React Native if you prefer that approach.
+
+## Navigation
+
+On the web, the browser provides URLs, history, and the back button. Frameworks like Next.js or React Router map URLs to pages.
+
+Mobile apps do not have a URL bar. Navigation is typically handled by a library such as React Navigation or Expo Router, which provide stacks, tabs, and drawers that behave like native navigation, including platform gestures and back behavior on Android.
+
+## Platform APIs
+
+Web apps use browser APIs: `localStorage`, `fetch`, the Geolocation API, and so on.
+
+React Native apps can access device features such as the camera, location, notifications, file system, and secure storage through native modules. Many of these come from community libraries or Expo's SDK. `fetch` works in both.
+
+## Building and shipping
+
+This is one of the biggest practical differences.
+
+- **Web**: you deploy to a server or hosting platform, and users get updates the next time they load the page.
+- **Mobile**: you build app binaries, sign them, and submit them to the Apple App Store and Google Play, which have review processes. Users update through the store, although services like Expo's EAS Update can deliver some JavaScript-only updates over the air within store policies.
+
+Developing for iOS locally generally requires a Mac with Xcode, while Android development uses Android Studio and its emulator. Expo simplifies much of this setup, and its documentation is a good starting point for new React Native projects.
+
+## Performance considerations
+
+Web performance focuses on bundle size, network loading, and Core Web Vitals.
+
+React Native performance focuses on keeping the UI responsive: avoiding unnecessary re-renders, using virtualized lists like `FlatList` for long data, optimizing images, and keeping heavy work off the UI thread. Recent React Native versions use a newer architecture designed to improve communication between JavaScript and native code.
+
+## What can be shared
+
+Even though the UI layer differs, a lot of code can be shared between a React web app and a React Native app:
+
+- Business logic and utility functions
+- API clients and data-fetching hooks
+- State management (Redux Toolkit, Zustand, TanStack Query)
+- Validation schemas and TypeScript types
+
+UI components usually differ, although React Native for Web can render React Native components in the browser, and monorepo tools make sharing packages between apps practical.
+
+## When to choose which
+
+Choose **React for the web** when:
+
+- The product is primarily used in a browser, such as dashboards, marketing sites, and e-commerce stores.
+- Search engine visibility and shareable URLs matter.
+- You want instant updates without app store releases.
+
+Choose **React Native** when:
+
+- You need an installable app on iOS and Android from one codebase.
+- You need device features such as the camera, push notifications, background location, or offline storage.
+- A native look, feel, and gestures are important to users.
+
+Many products need both: a web dashboard for administrators and a mobile app for users in the field. React's shared concepts make it easier for one team to work across both.
+
+## Key takeaways
+
+- React and React Native share the component model, hooks, and JSX.
+- React DOM renders HTML in the browser; React Native renders native mobile views.
+- Styling, navigation, platform APIs, and deployment work differently.
+- Logic, data fetching, state, and types can often be shared between both.
+- Choose based on where users are and what platform features the product needs.
+
+## Conclusion
+
+Learning React makes React Native much easier, and the reverse is also true. The core ideas transfer directly; what you need to learn is each platform's components, styling, navigation, and release process.

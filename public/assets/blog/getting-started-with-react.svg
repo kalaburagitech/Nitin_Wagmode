@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Getting Started with React.js">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#61DAFB" stop-opacity="0.32"/>
+      <stop offset="0.5" stop-color="#111621"/>
+      <stop offset="1" stop-color="#2DD4BF" stop-opacity="0.22"/>
+    </linearGradient>
+    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
+      <path d="M42 0H0V42" fill="none" stroke="#2A3344" stroke-opacity="0.35"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="#0A0D14"/>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)" opacity="0.55"/>
+  <rect x="96" y="100" width="130" height="50" rx="25" fill="#61DAFB" fill-opacity="0.16" stroke="#61DAFB" stroke-opacity="0.8"/>
+  <text x="126" y="133" fill="#61DAFB" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="800">React</text>
+  <text x="96" y="230" fill="#F8FAFC" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">Getting Started with</text><text x="96" y="294" fill="#F8FAFC" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">React.js</text>
+  <text x="96" y="368" fill="#94A3B8" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="24">Components, props, state, and events</text><text x="96" y="402" fill="#94A3B8" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="24">from the ground up</text>
+  <g transform="translate(760 150)">
+  <rect x="0" y="20" width="330" height="340" rx="20" fill="#0B1020" stroke="#2A3344" stroke-width="3"/>
+  <text x="24" y="64" fill="#F8FAFC" font-family="Consolas, monospace" font-size="22">{</text><text x="48" y="100" fill="#61DAFB" font-family="Consolas, monospace" font-size="22">"type": "form",</text><text x="48" y="136" fill="#38BDF8" font-family="Consolas, monospace" font-size="22">"fields": [</text><text x="72" y="172" fill="#94A3B8" font-family="Consolas, monospace" font-size="22">{ "kind": "text" },</text><text x="72" y="208" fill="#94A3B8" font-family="Consolas, monospace" font-size="22">{ "kind": "select" }</text><text x="48" y="244" fill="#38BDF8" font-family="Consolas, monospace" font-size="22">],</text><text x="48" y="280" fill="#61DAFB" font-family="Consolas, monospace" font-size="22">"layout": "grid"</text><text x="24" y="316" fill="#F8FAFC" font-family="Consolas, monospace" font-size="22">}</text></g>
+</svg>

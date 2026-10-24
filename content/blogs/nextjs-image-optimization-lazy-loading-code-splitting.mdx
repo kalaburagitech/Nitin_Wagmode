@@ -1,0 +1,176 @@
+---
+title: "Image Optimization, Lazy Loading, and Code Splitting in Next.js"
+description: "How to use next/image, native lazy loading, next/dynamic, and next/font in the Next.js App Router to load less and load it at the right time."
+date: 2026-10-24
+category: "Performance"
+tags: ["Next.js", "Web Performance", "Image Optimization", "Code Splitting"]
+keywords: ["Next.js image optimization", "next/image priority", "next/dynamic", "lazy loading Next.js", "code splitting Next.js"]
+readingTime: "5 min read"
+image: /assets/blog/nextjs-image-optimization-lazy-loading-code-splitting.svg
+imageAlt: "Image frames and split code bundles"
+draft: true
+slug: nextjs-image-optimization-lazy-loading-code-splitting
+---
+
+Next.js includes several built-in tools for performance: an image component, automatic route-based code splitting, dynamic imports, and font optimization. Using them well can reduce how much a page downloads and improve metrics like LCP and CLS.
+
+The examples below use the App Router. Details can differ between Next.js versions, so check the documentation for the version your project uses.
+
+## Images with next/image
+
+The `Image` component from `next/image` builds on the native `<img>` element and adds:
+
+- **Resizing and modern formats**: images are served at sizes suited to the device, and in formats such as WebP when the browser supports them.
+- **Lazy loading by default**: images below the fold load as they approach the viewport.
+- **Layout stability**: required dimensions mean the browser can reserve space, which helps avoid layout shift.
+
+```jsx
+import Image from "next/image";
+
+export function TeamPhoto() {
+  return (
+    <Image
+      src="/images/team.jpg"
+      alt="The team at the office"
+      width={1200}
+      height={800}
+      sizes="(min-width: 1024px) 50vw, 100vw"
+    />
+  );
+}
+```
+
+### Tell the browser how wide the image will be
+
+The `sizes` prop describes how wide the image displays at different viewport sizes. Without it, the browser may download a larger file than needed. In the example above, the image takes half the viewport on large screens and the full width otherwise.
+
+### Prioritize the LCP image
+
+Images are lazy-loaded by default, which is wrong for the main image at the top of the page. For the hero image that is likely to be the Largest Contentful Paint element, mark it as a priority so it loads eagerly with high priority:
+
+```jsx
+<Image src="/hero.jpg" alt="Dashboard preview" width={1600} height={900} priority />
+```
+
+Use this for one or two above-the-fold images, not every image. Newer Next.js versions may rename or replace this option, so confirm the current prop name in the docs for your version.
+
+### Images that fill a container
+
+When you do not know the exact dimensions, `fill` makes the image cover its parent. The parent needs a position and a size:
+
+```jsx
+<div style={{ position: "relative", aspectRatio: "16 / 9" }}>
+  <Image src={post.cover} alt={post.title} fill sizes="(min-width: 768px) 33vw, 100vw" style={{ objectFit: "cover" }} />
+</div>
+```
+
+### Remote images
+
+Images from another domain must be allowed in `next.config.js`, which prevents your image optimizer from being used for arbitrary URLs:
+
+```js
+module.exports = {
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "images.example.com" }],
+  },
+};
+```
+
+## Lazy loading other content
+
+Native lazy loading also works for iframes, which is useful for embedded videos and maps:
+
+```html
+<iframe src="https://www.youtube-nocookie.com/embed/VIDEO_ID" title="Product demo" loading="lazy" width="560" height="315"></iframe>
+```
+
+For heavy embeds, a lighter option is a placeholder image with a play button that loads the real embed only when clicked.
+
+## Code splitting
+
+### Automatic route splitting
+
+Next.js splits JavaScript by route automatically. Visiting `/about` does not download the code that only `/dashboard` uses. In the App Router, Server Components add another benefit: their code runs on the server and is not sent to the browser at all.
+
+A practical way to reduce client JavaScript is to keep `"use client"` at the edges. Make small interactive components client components, and let the pages and layouts around them stay as Server Components.
+
+### Dynamic imports with next/dynamic
+
+For large client-side components that are not needed immediately, such as a chart, rich text editor, or map, `next/dynamic` loads them separately:
+
+```jsx
+"use client";
+
+import { useState } from "react";
+import dynamic from "next/dynamic";
+
+const SalesChart = dynamic(() => import("./SalesChart"), {
+  loading: () => <p>Loading chart…</p>,
+  ssr: false, // only if the component depends on browser-only APIs
+});
+
+export function Reports() {
+  const [showChart, setShowChart] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setShowChart(true)}>Show chart</button>
+      {showChart && <SalesChart />}
+    </>
+  );
+}
+```
+
+The chart's code downloads only when the user asks for it. Use `ssr: false` only when a component truly cannot render on the server, because it removes that content from the initial HTML.
+
+### Importing libraries on demand
+
+The same idea works for libraries used in a single interaction:
+
+```js
+async function exportToCsv(rows) {
+  const { unparse } = await import("papaparse");
+  const csv = unparse(rows);
+  // download csv...
+}
+```
+
+## Fonts with next/font
+
+Web fonts can block rendering and cause layout shift. `next/font` downloads fonts at build time, serves them from your own domain, and generates fallback font metrics to reduce shifting when the font loads:
+
+```jsx
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"], display: "swap" });
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className={inter.className}>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+Loading only the subsets and weights you use keeps font files small.
+
+## Measuring the effect
+
+Check whether a change helped rather than assuming it did:
+
+- Run a production build (`next build`), which prints the JavaScript size of each route.
+- Use `@next/bundle-analyzer` to see which modules make bundles large.
+- Compare Lighthouse or WebPageTest runs before and after, using medians of several runs.
+- Watch real-user Core Web Vitals after deploying.
+
+## Key takeaways
+
+- `next/image` handles resizing, modern formats, lazy loading, and reserved space; always provide a correct `sizes` value.
+- Prioritize the LCP image and do not lazy-load above-the-fold content.
+- Keep client components small so more code stays on the server.
+- Use `next/dynamic` and dynamic `import()` for heavy, non-critical code.
+- Use `next/font` to self-host fonts and reduce layout shift.
+
+## Conclusion
+
+Next.js provides strong performance defaults, but they work best when you give them the right information: image sizes, which content is critical, and which code can wait. Measure before and after, and focus on changes that improve what users see first.

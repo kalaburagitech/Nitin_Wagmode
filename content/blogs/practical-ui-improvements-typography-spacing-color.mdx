@@ -1,0 +1,150 @@
+---
+title: "Practical UI Improvements: Typography, Spacing, Colors, and Visual Hierarchy"
+description: "Small, practical changes developers can make to improve an interface: readable type, consistent spacing, accessible color, and a clear visual hierarchy."
+date: 2026-10-24
+category: "UI/UX"
+tags: ["UI Design", "Typography", "Accessibility", "CSS"]
+keywords: ["UI design tips for developers", "visual hierarchy", "web typography", "color contrast WCAG", "spacing scale CSS"]
+readingTime: "5 min read"
+image: /assets/blog/practical-ui-improvements-typography-spacing-color.svg
+imageAlt: "Typography, spacing guides, and color swatches"
+draft: true
+slug: practical-ui-improvements-typography-spacing-color
+---
+
+You do not need to be a designer to make an interface noticeably better. Most "this looks off" feedback comes down to four things: typography, spacing, color, and hierarchy. Each has a few simple rules that developers can apply directly in CSS.
+
+## Typography
+
+Text is most of what users read on a website, so it deserves the most care.
+
+### Use a comfortable base size
+
+A base body size of 16px (1rem) is a sensible default for the web. Smaller body text is harder to read, especially on mobile. Set sizes in `rem` so they respect the user's browser font settings.
+
+### Control line length and line height
+
+Long lines are tiring to read. A common guideline is roughly 45 to 75 characters per line for body text. The `ch` unit makes this easy:
+
+```css
+.prose {
+  max-width: 65ch;
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  line-height: 1.2;
+}
+```
+
+Body text benefits from generous line height; large headings look better with tighter line height.
+
+### Use a type scale
+
+Pick a small set of sizes and use only those. A simple scale might be 14, 16, 18, 20, 24, 30, and 36 pixels. Fewer sizes means the differences between them are meaningful, and the interface feels more deliberate.
+
+### Limit font families and weights
+
+One family for everything, or one for headings and one for body text, is usually enough. Two or three weights (regular, medium, bold) are plenty. Every extra font file also adds to page weight.
+
+## Spacing
+
+Inconsistent spacing is one of the most common reasons a layout feels unpolished.
+
+### Use a spacing scale
+
+Base spacing on a unit, often 4px or 8px, and only use multiples: 4, 8, 12, 16, 24, 32, 48, 64. Tailwind's default spacing scale follows this idea, and CSS variables work just as well.
+
+### Group related things
+
+Elements that belong together should be closer to each other than to unrelated elements. A form label should sit closer to its input than to the previous field:
+
+```css
+.field label {
+  margin-bottom: 0.375rem; /* close to its own input */
+}
+
+.field + .field {
+  margin-top: 1.5rem; /* clearly separate from the next field */
+}
+```
+
+This principle, often called proximity, lets users understand structure without borders or boxes.
+
+### Give content room
+
+Cramped layouts are harder to scan. When a section feels busy, adding space around it is often more effective than adding dividers.
+
+## Color
+
+Color should support the content, not compete with it.
+
+### Start with neutrals and one accent
+
+Most of an interface can be built with a range of grays for text, borders, and backgrounds, plus one accent color for links, primary buttons, and focus states. Add semantic colors (success, warning, error) only where they carry meaning.
+
+### Meet contrast requirements
+
+Low-contrast text is a frequent accessibility problem. The WCAG 2.2 AA guidelines ask for:
+
+- At least **4.5:1** contrast for normal body text.
+- At least **3:1** for large text (roughly 24px regular or 18.66px bold and above).
+- At least **3:1** for meaningful UI parts such as input borders, icons, and focus indicators.
+
+Browser developer tools show contrast ratios when you inspect a color, which makes checking quick.
+
+### Do not rely on color alone
+
+Red text alone does not tell a color-blind user that a field has an error. Pair color with text or an icon, such as an error message under the field or an icon next to a status.
+
+## Visual hierarchy
+
+Hierarchy tells users what to look at first. Without it, every element competes for attention.
+
+### Use size, weight, and color together
+
+Hierarchy is not only about font size. You can de-emphasize secondary information by making it smaller, lighter in weight, or a muted color:
+
+```css
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.card-meta {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+```
+
+Muting secondary text is often more effective than making primary text bigger.
+
+### One primary action per area
+
+If a screen has three bright primary buttons, none of them stands out. Choose the main action and give it the primary style; make other actions secondary or text buttons.
+
+### Align to a grid
+
+Aligned edges create order. When elements share left edges and consistent columns, the page looks calmer, even if nothing else changes.
+
+## A quick review checklist
+
+Before shipping a screen, check:
+
+- Is body text at least 16px with comfortable line length and height?
+- Do all sizes, spacing, and colors come from your scales or tokens?
+- Does text meet contrast requirements in both light and dark themes?
+- Is there one clear primary action?
+- Are related elements grouped, and unrelated ones separated?
+
+## Key takeaways
+
+- Readable typography starts with a 16px base, limited line length, and a type scale.
+- A spacing scale and the proximity principle make layouts feel organized.
+- Build with neutrals and one accent, and check contrast against WCAG guidelines.
+- Create hierarchy with size, weight, and color, and limit primary actions.
+
+## Conclusion
+
+Good UI is often the result of many small, consistent decisions. Applying these rules for typography, spacing, color, and hierarchy can make an interface clearer and more accessible without a full redesign.

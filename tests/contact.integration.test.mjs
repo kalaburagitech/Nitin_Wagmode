@@ -366,11 +366,29 @@ describe("contact page", () => {
   });
 
   test("resume PDF is served", async () => {
-    const res = await fetch(`http://127.0.0.1:${PORTS.ok}/resume.pdf`);
+    const res = await fetch(`http://127.0.0.1:${PORTS.ok}/Nitin_Wagmode.pdf`);
     assert.equal(res.status, 200);
     assert.equal(res.headers.get("content-type"), "application/pdf");
     const bytes = Buffer.from(await res.arrayBuffer());
     assert.equal(bytes.subarray(0, 5).toString(), "%PDF-");
+    assert.match(res.headers.get("content-disposition") || "", /filename="Nitin_Wagmode\.pdf"/);
+  });
+
+  test("old /resume.pdf link redirects to the named file", async () => {
+    const res = await fetch(`http://127.0.0.1:${PORTS.ok}/resume.pdf`, { redirect: "manual" });
+    assert.equal(res.status, 308);
+    assert.equal(new URL(res.headers.get("location"), "http://x").pathname, "/Nitin_Wagmode.pdf");
+  });
+
+  test("every resume download link uses the Nitin_Wagmode.pdf filename", async () => {
+    for (const path of ["/", "/about", "/resume"]) {
+      const html = await (await fetch(`http://127.0.0.1:${PORTS.ok}${path}`)).text();
+      const links = [...html.matchAll(/<a[^>]*href="\/Nitin_Wagmode\.pdf"[^>]*>/g)].map((m) => m[0]);
+      assert.ok(links.length > 0, `no resume link on ${path}`);
+      for (const link of links.filter((l) => l.includes("download"))) {
+        assert.match(link, /download="Nitin_Wagmode\.pdf"/, `${path}: ${link}`);
+      }
+    }
   });
 });
 

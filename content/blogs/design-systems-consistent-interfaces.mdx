@@ -1,0 +1,144 @@
+---
+title: "Design Systems for Consistent Web Interfaces"
+description: "What a design system is, how design tokens, components, and guidelines fit together, and a practical way to start one in a React and CSS codebase."
+date: 2026-10-24
+category: "UI/UX"
+tags: ["Design Systems", "Design Tokens", "CSS", "React"]
+keywords: ["design system", "design tokens", "CSS custom properties", "UI consistency", "component library"]
+readingTime: "5 min read"
+image: /assets/blog/design-systems-consistent-interfaces.svg
+imageAlt: "Grid of swatches and components representing a design system"
+draft: true
+slug: design-systems-consistent-interfaces
+---
+
+As a product grows, its interface tends to drift. Slightly different blues appear, spacing varies screen to screen, and every new feature reinvents its own form fields. A design system is the shared set of decisions that stops this drift, so designers and developers build from the same foundation.
+
+## What a design system contains
+
+A design system is more than a component library. It usually has three layers:
+
+1. **Design tokens**: named values for color, typography, spacing, radii, shadows, and motion.
+2. **Components**: reusable UI built from those tokens, such as buttons, inputs, cards, and dialogs.
+3. **Guidelines**: when and how to use each piece, including content and accessibility rules.
+
+Each layer depends on the one before it. Components without tokens still drift; tokens without guidelines get used inconsistently.
+
+## Design tokens
+
+Tokens give every design decision a name. Instead of writing `#2563eb` in forty places, you write `--color-accent` once and reference it everywhere.
+
+A good token set has two levels:
+
+- **Primitive tokens** describe raw values: `--blue-600`, `--space-4`, `--radius-md`.
+- **Semantic tokens** describe purpose: `--color-accent`, `--color-text-muted`, `--color-surface`.
+
+Components should use semantic tokens. That way a dark theme only remaps semantic tokens to different primitives, and no component changes.
+
+```css
+:root {
+  --gray-50: #f8fafc;
+  --gray-900: #0f172a;
+  --blue-600: #2563eb;
+
+  --color-surface: var(--gray-50);
+  --color-text: var(--gray-900);
+  --color-accent: var(--blue-600);
+
+  --space-2: 0.5rem;
+  --space-4: 1rem;
+  --radius-md: 0.5rem;
+}
+
+.dark {
+  --color-surface: var(--gray-900);
+  --color-text: var(--gray-50);
+}
+```
+
+## Using tokens with Tailwind CSS
+
+If your project uses Tailwind, you can point its theme at the same CSS variables, so utility classes and custom CSS share one source of truth:
+
+```js
+// tailwind.config.js
+module.exports = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        surface: "var(--color-surface)",
+        ink: "var(--color-text)",
+        accent: "var(--color-accent)",
+      },
+      borderRadius: {
+        md: "var(--radius-md)",
+      },
+    },
+  },
+};
+```
+
+Now `bg-surface text-ink` works in both themes without a `dark:` variant on every element.
+
+## Scales instead of one-off values
+
+Consistency comes from limiting choices. Rather than allowing any spacing or font size, define scales:
+
+- **Spacing**: a scale based on a 4px or 8px unit (4, 8, 12, 16, 24, 32, 48...).
+- **Type**: a small set of sizes with matching line heights, for example 14, 16, 18, 24, 30, 36.
+- **Radii and shadows**: two or three levels each are usually enough.
+
+When every margin comes from the scale, layouts line up without anyone measuring pixels.
+
+## Components built on tokens
+
+Components turn tokens into working UI. Each one should document its variants, sizes, and states. A button, for example, needs default, hover, focus, active, disabled, and loading states, and each of those should use tokens rather than hard-coded values.
+
+Start with the components every screen uses:
+
+- Button and link styles
+- Text input, select, checkbox, and radio
+- Card or panel
+- Dialog or modal
+- Alerts and inline messages
+
+These five or six components cover a large share of most interfaces.
+
+## Guidelines and documentation
+
+Guidelines answer the questions tokens and components cannot. When should you use a secondary button? How long can a button label be? What does an error message say?
+
+Useful guidelines are short and include examples of both correct and incorrect usage. Accessibility rules belong here too: minimum color contrast, focus visibility, and touch target size.
+
+For color contrast, the WCAG 2.2 AA guideline asks for at least 4.5:1 for normal text and 3:1 for large text and meaningful UI parts such as input borders and icons. Checking token pairs against these ratios once is far easier than checking every screen.
+
+## Starting small
+
+You do not need a dedicated team or a large tool to begin. A practical starting path:
+
+1. Audit the current UI. Screenshot every button, color, and font size you can find.
+2. Consolidate. Pick the values worth keeping and turn them into tokens.
+3. Replace hard-coded values with tokens, one area at a time.
+4. Extract the most repeated components and document their variants.
+5. Add guidelines as questions come up, rather than writing them all up front.
+
+## Keeping it alive
+
+A design system only helps if people use it. A few habits keep it healthy:
+
+- Make the right thing the easy thing: shared components should be easier to use than writing new ones.
+- Review new UI against the system, and update the system when a real gap appears.
+- Version changes and communicate them, especially changes that affect existing screens.
+
+## Key takeaways
+
+- A design system combines tokens, components, and guidelines.
+- Use primitive tokens for raw values and semantic tokens in components.
+- Scales for spacing and type create consistency with less effort.
+- Bake contrast and focus rules into tokens and components.
+- Start with an audit and grow the system from real needs.
+
+## Conclusion
+
+A design system is a set of agreements written down in code. Even a small one, with a handful of tokens and five core components, makes interfaces more consistent and makes new features faster to build.

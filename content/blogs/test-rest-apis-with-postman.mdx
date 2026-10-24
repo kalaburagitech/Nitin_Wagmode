@@ -1,0 +1,184 @@
+---
+title: "How to Test REST APIs Using Postman"
+description: "A practical guide to testing REST APIs with Postman: requests, collections, environments and variables, authentication, test scripts, chaining requests, and running tests from the command line."
+date: 2026-10-24
+category: "Full-Stack"
+tags: ["Postman", "REST APIs", "API Testing", "Testing"]
+keywords: ["Postman API testing", "Postman test scripts", "Postman environments variables", "Newman Postman CLI", "REST API testing tutorial"]
+readingTime: "5 min read"
+image: /assets/blog/test-rest-apis-with-postman.svg
+imageAlt: "API request and response panels with passing test checks"
+draft: true
+slug: test-rest-apis-with-postman
+---
+
+Postman is a widely used tool for building, exploring, and testing APIs. Frontend developers use it to check how an API behaves before writing UI code, reproduce bugs, and confirm that error responses are handled correctly. With test scripts and collections, Postman can also run repeatable API checks automatically.
+
+This guide walks through the features you need to test a REST API effectively. Postman's interface changes over time, so menu names may differ slightly in your version.
+
+## REST basics
+
+A REST API exposes resources through URLs and uses HTTP methods to act on them:
+
+- `GET /api/tasks`: read a list of tasks
+- `GET /api/tasks/42`: read one task
+- `POST /api/tasks`: create a task
+- `PATCH /api/tasks/42`: update part of a task
+- `DELETE /api/tasks/42`: delete a task
+
+Responses include a status code. Common ones to test include `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, and `500 Internal Server Error`.
+
+## Sending your first request
+
+1. Create a new request.
+2. Choose the method, such as `GET`, and enter the URL.
+3. Click **Send**.
+4. Inspect the response body, status code, response time, and headers.
+
+For a `POST` or `PATCH` request, open the **Body** tab, choose **raw** and **JSON**, and enter the data:
+
+```json
+{
+  "title": "Review pull request",
+  "done": false
+}
+```
+
+Postman sets the `Content-Type: application/json` header automatically when you choose JSON.
+
+## Organize requests in collections
+
+A collection is a group of related requests, such as everything for one API. Collections let you:
+
+- Keep requests organized in folders, for example "Auth", "Tasks", and "Users".
+- Share requests with your team.
+- Run all requests in order and see test results together.
+
+## Use environments and variables
+
+Hard-coding URLs and tokens makes requests hard to reuse. Variables solve this. Create an environment, such as "Local" or "Staging", and define variables:
+
+- `baseUrl`: `http://localhost:4000`
+- `authToken`: (set by a script after logging in)
+
+Then use double curly braces in requests:
+
+```text
+{{baseUrl}}/api/tasks
+```
+
+Switching environments changes every request at once. Postman supports several variable scopes, including global, collection, and environment variables. Collection and environment variables are usually the most useful.
+
+Treat real credentials carefully. Store secrets as the current (local) value rather than an initial value that syncs to shared workspaces, and use test accounts instead of production credentials.
+
+## Authentication
+
+Many APIs require a token. In the request or collection **Authorization** tab, choose a type such as **Bearer Token** and use a variable:
+
+```text
+{{authToken}}
+```
+
+Setting authorization at the collection level lets every request inherit it.
+
+## Writing tests
+
+Postman lets you run JavaScript after a response arrives. In current versions this is the **Post-response** section of the **Scripts** tab (older versions called it **Tests**). Tests use the `pm` object:
+
+```js
+pm.test("returns 200", function () {
+  pm.response.to.have.status(200);
+});
+
+pm.test("responds quickly", function () {
+  pm.expect(pm.response.responseTime).to.be.below(1000);
+});
+
+pm.test("returns a list of tasks", function () {
+  const tasks = pm.response.json();
+  pm.expect(tasks).to.be.an("array");
+  if (tasks.length) {
+    pm.expect(tasks[0]).to.have.property("title");
+    pm.expect(tasks[0].title).to.be.a("string");
+  }
+});
+```
+
+The response time check here is a simple sanity threshold for one environment, not a performance test. Response times depend on network, server, and data size.
+
+### Test error cases too
+
+Good API tests do not only check the happy path. Create requests for invalid input and missing permissions:
+
+```js
+// Request: POST {{baseUrl}}/api/tasks with body {}
+pm.test("rejects a missing title", function () {
+  pm.response.to.have.status(400);
+  pm.expect(pm.response.json()).to.have.property("error");
+});
+```
+
+Useful negative tests include missing required fields, invalid data types, requests without a token (expect `401`), requests for another user's data (expect `403` or `404`), and IDs that do not exist (expect `404`).
+
+## Chaining requests
+
+Scripts can save values from one response for use in the next request. After a login request:
+
+```js
+pm.test("login succeeds", function () {
+  pm.response.to.have.status(200);
+});
+
+const body = pm.response.json();
+pm.environment.set("authToken", body.token);
+```
+
+After creating a resource:
+
+```js
+const task = pm.response.json();
+pm.collectionVariables.set("taskId", task._id);
+```
+
+The next request can use `{{baseUrl}}/api/tasks/{{taskId}}`. This lets a collection test a complete flow: log in, create a task, update it, read it, and delete it.
+
+## Pre-request scripts
+
+Pre-request scripts run before a request is sent. They are useful for generating dynamic data:
+
+```js
+pm.variables.set("uniqueTitle", `Task ${Date.now()}`);
+```
+
+Postman also provides built-in dynamic variables such as `{{$randomEmail}}` and `{{$guid}}` for test data.
+
+## Running a whole collection
+
+The **Collection Runner** runs every request in a collection in order and reports which tests passed or failed. You can choose the environment, number of iterations, and a data file (CSV or JSON) to run the same requests with different inputs.
+
+## Running tests from the command line
+
+To run collections in a continuous integration pipeline, export the collection and environment as JSON and use Newman, Postman's open-source command-line runner:
+
+```bash
+npm install -g newman
+newman run tasks-api.postman_collection.json -e local.postman_environment.json
+```
+
+Postman also offers its own CLI with similar capabilities. Either way, a failing test returns a non-zero exit code, which can fail a CI build.
+
+## Postman and code-based tests
+
+Postman is excellent for exploring APIs, sharing examples, and quick regression checks. For tests that live alongside your code and run on every commit, many teams also write API tests in code, using tools such as Jest with Supertest for Node.js APIs. The two approaches complement each other.
+
+## Key takeaways
+
+- Organize requests into collections and use environments for URLs and tokens.
+- Write tests that check status codes, response structure, and error handling.
+- Chain requests by saving values such as tokens and IDs to variables.
+- Test negative cases, not just successful responses.
+- Run collections automatically with the Collection Runner or Newman.
+
+## Conclusion
+
+Postman turns manual API checks into repeatable tests. Start by saving the requests you already make by hand, add a few assertions to each, and grow them into a collection that verifies your API's most important flows.

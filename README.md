@@ -31,7 +31,7 @@ Built with Next.js 14 (App Router), React 18, Tailwind CSS, Framer Motion, and R
 
 ```
 content/blogs/            Blog articles (Markdown with frontmatter)
-public/                   resume.pdf, icons, og-image.png, assets/ (photo, covers)
+public/                   Nitin_Wagmode.pdf (résumé), icons, og-image.png, assets/ (photo, covers)
 scripts/generate-assets.py  Regenerates project/blog covers, icons, and the OG image
 src/
   app/                    Routes, metadata, sitemap.js, robots.js, manifest.js
@@ -119,7 +119,7 @@ If Upstash is unreachable the endpoint logs the error and falls back to the in-m
 
 - **Profile, links, summary:** `src/data/profile.js`. Add a URL to `socials.github` to show GitHub links.
 - **Photo:** `public/assets/profile.webp` (transparent portrait, 640×800) and `public/assets/profile-square.jpg` (800×800, used for structured data and the OG image). Run `npm run generate:assets` after replacing the square photo to rebuild the OG image.
-- **Resume:** replace `public/resume.pdf`.
+- **Resume:** replace `public/Nitin_Wagmode.pdf` (keep the name; `/resume.pdf` redirects to it).
 - **Projects / experience / skills / services:** edit the matching file in `src/data/`. Add a URL to a project's `liveLink`/`githubLink` to show link buttons.
 - **Blog:** add a `.mdx` file to `content/blogs/` (copy an existing post's frontmatter) and set `draft: false` to publish. The five existing articles are drafts awaiting review.
 
@@ -134,7 +134,7 @@ If Upstash is unreachable the endpoint logs the error and falls back to the in-m
 ### Post-deploy checklist
 
 - [ ] All routes load without console errors.
-- [ ] `/resume.pdf` downloads.
+- [ ] `/Nitin_Wagmode.pdf` downloads (and `/resume.pdf` redirects to it).
 - [ ] The contact form and "Hire me" dialog deliver a test email.
 - [ ] `/sitemap.xml` and `/robots.txt` show the production domain.
 - [ ] A link preview shows the Open Graph image.

@@ -43,7 +43,7 @@ export default function SiteFooter() {
             {moreLinks.map((item) => (
               <li key={item.path}>
                 {item.download ? (
-                  <a href={item.path} download className="link-underline text-body hover:text-ink">
+                  <a href={item.path} download={profile.resumeFileName} className="link-underline text-body hover:text-ink">
                     {item.name}
                   </a>
                 ) : (

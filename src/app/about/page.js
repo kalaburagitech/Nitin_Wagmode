@@ -87,7 +87,7 @@ export default function AboutPage() {
           </dl>
 
           <div className="mt-10 flex flex-wrap gap-3">
-            <a href={profile.resumeUrl} download className="btn-primary">
+            <a href={profile.resumeUrl} download={profile.resumeFileName} className="btn-primary">
               <FiDownload aria-hidden="true" /> Download résumé
             </a>
             <Link href="/experience" className="btn-ghost">

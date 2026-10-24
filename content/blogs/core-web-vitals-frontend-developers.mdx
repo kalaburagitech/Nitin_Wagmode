@@ -1,0 +1,153 @@
+---
+title: "Understanding Core Web Vitals for Frontend Developers"
+description: "What LCP, INP, and CLS measure, the thresholds Google uses, the difference between field and lab data, and the most common frontend causes of poor scores."
+date: 2026-10-24
+category: "Performance"
+tags: ["Web Performance", "Core Web Vitals", "LCP", "INP", "CLS"]
+keywords: ["Core Web Vitals", "LCP INP CLS", "Interaction to Next Paint", "field data vs lab data", "web performance metrics"]
+readingTime: "5 min read"
+image: /assets/blog/core-web-vitals-frontend-developers.svg
+imageAlt: "Three gauges representing loading, interactivity, and visual stability"
+draft: true
+slug: core-web-vitals-frontend-developers
+---
+
+Core Web Vitals are a set of metrics Google uses to describe real-world user experience on a page. They focus on three questions: how quickly the main content appears, how quickly the page responds to input, and how stable the layout is while loading.
+
+For frontend developers, they are useful because each metric maps to concrete things in the code.
+
+## The three metrics
+
+### Largest Contentful Paint (LCP)
+
+LCP measures when the largest visible image or text block in the viewport finishes rendering. It approximates when the user sees the main content.
+
+- **Good**: 2.5 seconds or less
+- **Needs improvement**: between 2.5 and 4 seconds
+- **Poor**: more than 4 seconds
+
+### Interaction to Next Paint (INP)
+
+INP measures responsiveness. It observes the delay between user interactions (clicks, taps, and key presses) and the next frame the browser paints, across the whole visit, and reports a value close to the worst one.
+
+- **Good**: 200 milliseconds or less
+- **Needs improvement**: between 200 and 500 milliseconds
+- **Poor**: more than 500 milliseconds
+
+INP replaced First Input Delay (FID) as a Core Web Vital in March 2024. FID only measured the delay before the first interaction was handled, while INP covers every interaction and includes the time to process it and paint the result.
+
+### Cumulative Layout Shift (CLS)
+
+CLS measures unexpected layout movement, such as text jumping down when an image or ad loads above it. It is a unitless score based on how much content moves and how far.
+
+- **Good**: 0.1 or less
+- **Needs improvement**: between 0.1 and 0.25
+- **Poor**: more than 0.25
+
+### How pages are assessed
+
+Google evaluates each metric at the 75th percentile of real page loads, split by mobile and desktop. A page passes when at least 75% of visits meet the "good" threshold for all three metrics. Thresholds can change over time, so check [web.dev/vitals](https://web.dev/articles/vitals) for the current definitions.
+
+## Field data and lab data
+
+This distinction causes a lot of confusion.
+
+- **Field data** (real user monitoring) comes from actual visitors on their own devices and networks. The Chrome User Experience Report (CrUX) collects this for sufficiently popular pages, and PageSpeed Insights shows it at the top of its report.
+- **Lab data** comes from a single simulated load in a controlled environment, such as Lighthouse in Chrome DevTools.
+
+Lab tests are reproducible and great for debugging, but they cannot fully represent your users. A fast laptop on office Wi-Fi tells you little about a mid-range phone on a slow mobile connection. Lab tools also cannot measure INP directly because there is no real user interacting; Lighthouse uses Total Blocking Time (TBT) as a related lab signal.
+
+When the two disagree, field data describes what users actually experienced.
+
+## Measuring in your own app
+
+The open-source `web-vitals` library reports these metrics from real users, so you can send them to your analytics:
+
+```js
+import { onCLS, onINP, onLCP } from "web-vitals";
+
+function sendToAnalytics(metric) {
+  const body = JSON.stringify({
+    name: metric.name,
+    value: metric.value,
+    rating: metric.rating, // "good" | "needs-improvement" | "poor"
+    id: metric.id,
+  });
+  navigator.sendBeacon?.("/api/vitals", body);
+}
+
+onCLS(sendToAnalytics);
+onINP(sendToAnalytics);
+onLCP(sendToAnalytics);
+```
+
+Next.js also provides a `useReportWebVitals` hook for the same purpose.
+
+## Common causes and fixes
+
+### Slow LCP
+
+LCP is often delayed by one of four things: a slow server response, render-blocking resources, a slow-loading LCP resource, or client-side rendering.
+
+- Find the LCP element (DevTools Performance panel or Lighthouse shows it).
+- If it is an image, make sure it is discoverable in the initial HTML, not injected later by JavaScript, and do not lazy-load it.
+- Hint the browser that it is important with `fetchpriority="high"` or your framework's equivalent.
+- Serve appropriately sized, modern-format images.
+- Render key content on the server where possible, rather than waiting for JavaScript to fetch and render it.
+
+```html
+<img src="/hero.webp" alt="Product dashboard" width="1200" height="630" fetchpriority="high" />
+```
+
+### Poor INP
+
+INP suffers when the main thread is busy and cannot respond quickly to input.
+
+- Break up long tasks, so the browser can handle input between chunks of work.
+- Avoid heavy work in event handlers; update the UI first, then do non-urgent work.
+- Reduce unnecessary re-renders in large component trees.
+- Ship less JavaScript, especially third-party scripts that run on every page.
+
+In React, `startTransition` marks a state update as non-urgent, so typing in an input stays responsive while an expensive list re-renders:
+
+```jsx
+import { useState, startTransition } from "react";
+
+function Search({ items }) {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("");
+
+  return (
+    <>
+      <input
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value); // urgent: keep the input responsive
+          startTransition(() => setFilter(e.target.value)); // can wait
+        }}
+      />
+      <Results items={items} filter={filter} />
+    </>
+  );
+}
+```
+
+### High CLS
+
+Layout shifts usually come from content that loads without reserved space.
+
+- Always set `width` and `height` (or `aspect-ratio`) on images and videos.
+- Reserve space for ads, embeds, and banners.
+- Avoid inserting content above existing content, unless it responds to a user action.
+- Use `font-display` and matched fallback fonts to reduce shifts when web fonts load.
+
+## Key takeaways
+
+- LCP measures loading, INP measures responsiveness, and CLS measures visual stability.
+- Google assesses them at the 75th percentile of real visits.
+- Field data reflects real users; lab data is for debugging and reproducing issues.
+- Most improvements come from prioritizing the main content, reducing main-thread work, and reserving space for late-loading content.
+
+## Conclusion
+
+Core Web Vitals turn "the site feels slow" into specific, measurable problems. Measure with real-user data where possible, use lab tools to find causes, and fix the issue that affects the most visits first.

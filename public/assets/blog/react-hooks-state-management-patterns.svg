@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="React Hooks &amp; State Management">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A855F7" stop-opacity="0.32"/>
+      <stop offset="0.5" stop-color="#111621"/>
+      <stop offset="1" stop-color="#2DD4BF" stop-opacity="0.22"/>
+    </linearGradient>
+    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
+      <path d="M42 0H0V42" fill="none" stroke="#2A3344" stroke-opacity="0.35"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="#0A0D14"/>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)" opacity="0.55"/>
+  <rect x="96" y="100" width="130" height="50" rx="25" fill="#A855F7" fill-opacity="0.16" stroke="#A855F7" stroke-opacity="0.8"/>
+  <text x="126" y="133" fill="#A855F7" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="800">React</text>
+  <text x="96" y="230" fill="#F8FAFC" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">React Hooks &amp; State</text><text x="96" y="294" fill="#F8FAFC" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">Management</text>
+  <text x="96" y="368" fill="#94A3B8" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="24">Practical patterns for where state</text><text x="96" y="402" fill="#94A3B8" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="24">should live</text>
+  <g transform="translate(760 150)">
+  <circle cx="165" cy="190" r="140" fill="#0B1020" stroke="#2A3344" stroke-width="3"/>
+  <path d="M95 160 A75 75 0 0 1 230 140" fill="none" stroke="#A855F7" stroke-width="12" stroke-linecap="round"/>
+  <path d="M235 220 A75 75 0 0 1 100 240" fill="none" stroke="#38BDF8" stroke-width="12" stroke-linecap="round"/>
+  <path d="M215 112 L240 140 L205 152 Z" fill="#A855F7"/>
+  <path d="M115 268 L90 240 L125 228 Z" fill="#38BDF8"/></g>
+</svg>

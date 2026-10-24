@@ -55,7 +55,7 @@ export default function HomeHero() {
             <Link href="/projects" className="btn-primary">
               View selected work <FiArrowRight aria-hidden="true" />
             </Link>
-            <a href={profile.resumeUrl} download={`${profile.fullName.replace(/\s+/g, "_")}_Resume.pdf`} className="btn-ghost">
+            <a href={profile.resumeUrl} download={profile.resumeFileName} className="btn-ghost">
               <FiDownload aria-hidden="true" /> Download résumé
             </a>
           </div>

@@ -1,0 +1,180 @@
+---
+title: "Building Mobile-First Responsive Websites"
+description: "What mobile-first means, how to set up the viewport, write min-width media queries, use fluid layouts and type, handle responsive images, and test on real devices."
+date: 2026-10-24
+category: "Responsive Design"
+tags: ["Responsive Design", "Mobile-First", "CSS", "Accessibility"]
+keywords: ["mobile first design", "responsive web design", "min-width media queries", "CSS clamp fluid typography", "responsive images srcset"]
+readingTime: "5 min read"
+image: /assets/blog/mobile-first-responsive-websites.svg
+imageAlt: "Phone, tablet, and desktop screens showing one responsive layout"
+draft: true
+slug: mobile-first-responsive-websites
+---
+
+Mobile-first design means starting with the smallest screen and adding layout and features as more space becomes available. It is both a CSS technique and a way of prioritizing content: if something matters on a small screen, it is probably important everywhere.
+
+## Why start with mobile
+
+- **Focus**: limited space forces you to decide what matters most.
+- **Simpler CSS**: small-screen layouts are usually a single column, so the base styles are simple and larger layouts build on top of them.
+- **Performance**: mobile devices often have slower networks and processors. Designing for them first encourages lighter pages.
+
+## Start with the viewport meta tag
+
+Without this tag, mobile browsers render the page at a desktop width and zoom out. Include it in the `<head>` of every page:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+```
+
+Avoid adding `maximum-scale=1` or `user-scalable=no`, which prevent users from zooming and harm accessibility. Frameworks such as Next.js add a suitable viewport tag by default.
+
+## Write min-width media queries
+
+In a mobile-first stylesheet, the base styles target small screens, and `min-width` media queries add styles as the screen grows:
+
+```css
+/* Base: small screens */
+.features {
+  display: grid;
+  gap: 1rem;
+}
+
+/* From 40rem (640px) up */
+@media (min-width: 40rem) {
+  .features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* From 64rem (1024px) up */
+@media (min-width: 64rem) {
+  .features {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+```
+
+Tailwind CSS follows the same model: unprefixed classes apply everywhere, and `sm:`, `md:`, and `lg:` apply from that breakpoint up.
+
+```html
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">...</div>
+```
+
+## Use flexible layouts
+
+Fixed pixel widths are the main cause of horizontal scrolling on phones. Prefer flexible values:
+
+```css
+.container {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+```
+
+Flexbox with `flex-wrap` and Grid with `auto-fill` and `minmax()` let content reflow naturally, often without extra media queries.
+
+## Fluid typography and spacing
+
+The CSS `clamp()` function sets a value that grows with the viewport between a minimum and maximum:
+
+```css
+h1 {
+  /* At least 2rem, at most 3.5rem, scaling in between */
+  font-size: clamp(2rem, 1.25rem + 3vw, 3.5rem);
+}
+
+.section {
+  padding-block: clamp(3rem, 2rem + 4vw, 6rem);
+}
+```
+
+Include a `rem` part in the middle value, as above. A value based only on `vw` does not respond to the user's font size settings or browser zoom.
+
+## Responsive images
+
+Phones should not download desktop-sized images. The `srcset` and `sizes` attributes let the browser choose the best file:
+
+```html
+<img
+  src="/images/team-800.jpg"
+  srcset="/images/team-400.jpg 400w, /images/team-800.jpg 800w, /images/team-1600.jpg 1600w"
+  sizes="(min-width: 64rem) 50vw, 100vw"
+  width="1600"
+  height="1067"
+  alt="The team working together"
+  loading="lazy"
+/>
+```
+
+The `width` and `height` attributes let the browser reserve space and avoid layout shift. Do not lazy-load the main image at the top of the page.
+
+## Design for touch
+
+Touch screens need different considerations than a mouse:
+
+- **Target size**: make buttons and links large enough to tap comfortably. WCAG 2.2 sets a minimum of 24 by 24 CSS pixels (with some exceptions), and many design guidelines recommend around 44 to 48 pixels for primary controls.
+- **Spacing**: leave room between tappable elements so users do not hit the wrong one.
+- **No hover-only features**: menus or information that only appear on hover are unreachable on touch devices. Use the `hover` media feature to add hover effects only where supported:
+
+```css
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-2px);
+  }
+}
+```
+
+## Mobile navigation
+
+A common pattern is a menu button that opens the navigation on small screens. Make it accessible:
+
+- Use a real `<button>` with an accessible name, such as "Open menu".
+- Reflect the state with `aria-expanded`.
+- Let users close it with the Escape key and move focus sensibly.
+
+## Forms on mobile
+
+Small details make mobile forms much easier to use:
+
+```html
+<label for="email">Email</label>
+<input id="email" type="email" autocomplete="email" inputmode="email" />
+
+<label for="phone">Phone</label>
+<input id="phone" type="tel" autocomplete="tel" />
+```
+
+The right `type` shows a suitable keyboard, and `autocomplete` lets browsers fill in known details. Keep input text at least 16px; some mobile browsers zoom in on smaller form fields when they receive focus.
+
+## Testing
+
+Browser developer tools have a device mode for quick checks, but they cannot fully reproduce real devices. Also:
+
+- Test on at least one real Android phone and one iPhone if possible.
+- Resize slowly through all widths, not just preset device sizes, to catch layouts that break in between.
+- Test at 200% browser zoom and with a larger default font size.
+- Check landscape orientation.
+- Throttle the network and CPU in developer tools to see how the page behaves on slower devices.
+
+## Key takeaways
+
+- Start with small-screen styles and add `min-width` media queries.
+- Always include the viewport meta tag, and never disable zoom.
+- Use flexible layouts, `max-width`, and `clamp()` for fluid sizing.
+- Serve responsive images with `srcset` and `sizes`.
+- Design for touch: adequate target size, no hover-only features, and mobile-friendly forms.
+
+## Conclusion
+
+Mobile-first design leads to simpler CSS, clearer priorities, and lighter pages. Build the small-screen experience well, enhance it as space allows, and test across real devices and widths.

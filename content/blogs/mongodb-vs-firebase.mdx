@@ -1,0 +1,151 @@
+---
+title: "MongoDB vs Firebase: Choosing the Right Data Solution"
+description: "A balanced comparison of MongoDB and Firebase (Cloud Firestore): data models, querying, real-time updates, security, offline support, pricing models, and which projects suit each."
+date: 2026-10-24
+category: "Full-Stack"
+tags: ["MongoDB", "Firebase", "Firestore", "Databases"]
+keywords: ["MongoDB vs Firebase", "MongoDB vs Firestore", "choose database for app", "Firebase Firestore real-time", "NoSQL database comparison"]
+readingTime: "6 min read"
+image: /assets/blog/mongodb-vs-firebase.svg
+imageAlt: "Two database icons compared side by side"
+draft: true
+slug: mongodb-vs-firebase
+---
+
+MongoDB and Firebase are both popular choices for storing app data, and both use flexible, document-based models. But they are different kinds of products. MongoDB is a database. Firebase is a backend platform from Google that includes databases along with authentication, hosting, file storage, serverless functions, and more.
+
+In this comparison, "Firebase" mostly refers to **Cloud Firestore**, Firebase's main document database. Firebase also offers the older Realtime Database, which stores data as a single JSON tree.
+
+## The core difference
+
+- **MongoDB** is a general-purpose document database. You typically access it from your own backend, for example a Node.js and Express API, which controls business logic and access rules.
+- **Firebase** lets client apps (web and mobile) read and write data directly through its SDKs, with access controlled by Security Rules. You can build many features without running your own server.
+
+This architectural difference affects almost every other comparison point.
+
+## Data model
+
+Both store documents that look like JSON.
+
+**MongoDB** stores documents in collections. Documents can be large and deeply nested, and MongoDB's aggregation pipeline can join, group, and transform data across collections.
+
+```js
+// MongoDB document in an "orders" collection
+{
+  _id: ObjectId("..."),
+  customerId: ObjectId("..."),
+  items: [{ sku: "TSHIRT-M", qty: 2, price: 499 }],
+  status: "shipped",
+  createdAt: ISODate("2026-10-20T09:30:00Z")
+}
+```
+
+**Firestore** organizes documents into collections, and documents can contain subcollections. Documents have a maximum size (currently 1 MiB), so data is often split across documents and subcollections, and sometimes duplicated to make reads efficient.
+
+```js
+// Firestore: users/{userId}/orders/{orderId}
+{
+  items: [{ sku: "TSHIRT-M", qty: 2, price: 499 }],
+  status: "shipped",
+  createdAt: Timestamp
+}
+```
+
+## Querying
+
+**MongoDB** has a rich query language: filtering on any field, complex conditions, text search (with Atlas Search on MongoDB Atlas), geospatial queries, and the aggregation pipeline for reports and analytics.
+
+**Firestore** queries are designed to stay fast as data grows, which means they have more constraints. Queries often need composite indexes, and some patterns, such as full-text search or complex joins, require restructuring data or using another service alongside Firestore. Firestore's query capabilities have expanded over time, so check its documentation for current limits.
+
+If your app needs ad-hoc reporting or complex aggregation, MongoDB is usually more flexible.
+
+## Real-time updates
+
+**Firestore** is built for real-time apps. Clients can subscribe to a document or query and receive changes immediately:
+
+```js
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+
+const q = query(collection(db, "messages"), where("roomId", "==", roomId));
+
+const unsubscribe = onSnapshot(q, (snapshot) => {
+  const messages = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  setMessages(messages);
+});
+
+// Later: unsubscribe();
+```
+
+**MongoDB** provides change streams, which let your backend watch for changes. To push updates to browsers or phones, you typically combine them with WebSockets or a similar technology on your own server.
+
+## Offline support
+
+Firestore's mobile and web SDKs can cache data locally and queue writes while offline, then sync when the connection returns. This is very useful for mobile apps used in areas with unreliable connectivity.
+
+With MongoDB, offline support is generally something you build in your app, for example with a local database like SQLite and your own sync logic. (MongoDB's former Realm/Atlas Device Sync product has been deprecated, so check current options before relying on any built-in sync.)
+
+## Security
+
+**MongoDB** is usually not exposed to clients. Your backend authenticates users, validates input, and decides what each user may access. The database itself should only accept connections from trusted servers.
+
+**Firebase** clients connect directly, so **Security Rules are essential**. Rules define who can read and write each document:
+
+```text
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/orders/{orderId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+Leaving rules open, for example during development, is a common cause of exposed data. Test rules with the Firebase Emulator Suite before deploying.
+
+## Authentication and other services
+
+Firebase includes Firebase Authentication (email, phone, and social sign-in), Cloud Storage, Cloud Functions, Hosting, Cloud Messaging for push notifications, and Analytics. For a mobile app, this can greatly reduce backend work.
+
+With MongoDB you choose your own authentication, storage, and hosting, which gives more control and more work.
+
+## Pricing models
+
+Pricing changes, so always check the current official pages. The structure, however, is useful to understand:
+
+- **Firestore** charges mainly per document read, write, and delete, plus storage and network usage. Costs scale with how often data is accessed, so data modeling and caching affect the bill. A screen that reads hundreds of documents on every load can become expensive.
+- **MongoDB Atlas** charges mainly for cluster size (compute, memory, and storage) or, on some tiers, for usage. Self-hosting MongoDB avoids service fees but adds operational work.
+
+Both offer free tiers suitable for learning and prototypes. Estimate costs using your expected read and write patterns rather than only data size.
+
+## Vendor lock-in and portability
+
+MongoDB is open to self-hosting and runs on all major clouds. Firestore is a Google Cloud service; moving away from it usually means rewriting data access code and security logic. This does not make Firebase a bad choice, but it is worth considering for long-lived products.
+
+## Which should you choose?
+
+Firebase (Firestore) is often a good fit when:
+
+- You are building a mobile or web app and want to ship quickly without managing servers.
+- Real-time updates, offline support, or built-in authentication are central features.
+- Your queries are relatively simple and predictable.
+
+MongoDB is often a good fit when:
+
+- You already have, or want, your own backend API, such as a MERN stack app.
+- You need flexible, complex queries, aggregation, or reporting.
+- You want control over hosting and portability between providers.
+
+Many products use both, for example Firebase Authentication and Cloud Messaging alongside a MongoDB-backed API.
+
+## Key takeaways
+
+- MongoDB is a database; Firebase is a backend platform that includes Firestore.
+- Firestore offers real-time listeners, offline sync, and direct client access secured by Security Rules.
+- MongoDB offers more flexible querying and aggregation, usually behind your own API.
+- Pricing works differently: Firestore by operations, MongoDB Atlas mainly by cluster resources.
+- Choose based on your architecture, query needs, and team, not popularity.
+
+## Conclusion
+
+Neither option is better in general; they solve different problems. Sketch your main screens and the queries each one needs, consider whether you want to run a backend, and choose the tool that fits those needs.

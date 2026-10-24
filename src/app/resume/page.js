@@ -15,7 +15,6 @@ export const metadata = generateMetadata({
   type: "profile",
 });
 
-const DOWNLOAD_NAME = `${profile.fullName.replace(/\s+/g, "_")}_Resume.pdf`;
 
 function Block({ title, children }) {
   const id = `resume-${title.toLowerCase().replace(/[^a-z]+/g, "-")}`;
@@ -45,7 +44,7 @@ export default function ResumePage() {
         intro="The one-page version of my experience. Download the PDF for applications, or read it here."
       >
         <div className="mt-8 flex flex-wrap gap-3">
-          <a href={profile.resumeUrl} download={DOWNLOAD_NAME} className="btn-primary">
+          <a href={profile.resumeUrl} download={profile.resumeFileName} className="btn-primary">
             <FiDownload aria-hidden="true" /> Download PDF
           </a>
           <a href={profile.resumeUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost">

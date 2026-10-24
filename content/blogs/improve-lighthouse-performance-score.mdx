@@ -1,0 +1,117 @@
+---
+title: "How to Improve Lighthouse Performance Scores"
+description: "How the Lighthouse performance score is calculated, why it varies between runs, how to read the report, and practical fixes for the audits that matter most."
+date: 2026-10-24
+category: "Performance"
+tags: ["Lighthouse", "Web Performance", "Chrome DevTools", "Core Web Vitals"]
+keywords: ["improve Lighthouse score", "Lighthouse performance", "Total Blocking Time", "PageSpeed Insights", "Lighthouse audit"]
+readingTime: "5 min read"
+image: /assets/blog/improve-lighthouse-performance-score.svg
+imageAlt: "Performance gauge and audit checklist"
+draft: true
+slug: improve-lighthouse-performance-score
+---
+
+Lighthouse is an open-source tool from Google that audits a page for performance, accessibility, best practices, and SEO. Its performance score is a quick way to spot problems, but it is easy to misread. This guide explains what the score means and how to improve it without chasing numbers for their own sake.
+
+## What the performance score measures
+
+Lighthouse loads your page once in a controlled environment and records several metrics. The performance score is a weighted combination of them. In current versions of Lighthouse (version 10 and later), the weights are:
+
+- **Total Blocking Time (TBT)**: 30%
+- **Largest Contentful Paint (LCP)**: 25%
+- **Cumulative Layout Shift (CLS)**: 25%
+- **First Contentful Paint (FCP)**: 10%
+- **Speed Index**: 10%
+
+Each metric's raw value is converted to a 0 to 100 score using a curve based on real-world website data, and the weighted average becomes the performance score. Weights can change between Lighthouse versions; the [Lighthouse scoring documentation](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring) lists the current values.
+
+Because TBT, LCP, and CLS together make up most of the score, they are usually where improvements have the most effect.
+
+## Why scores change between runs
+
+Running Lighthouse twice on the same page often gives different scores. This is normal. Results can vary because of:
+
+- Other programs or browser extensions using CPU on your machine.
+- Network conditions and server response time.
+- Third-party scripts such as ads or analytics behaving differently each load.
+- A/B tests or personalized content.
+
+To get more reliable numbers:
+
+- Run Lighthouse in an Incognito window (so extensions do not interfere), or use the Lighthouse CLI.
+- Run it several times and look at the median, not a single result.
+- Compare before and after on the same machine and settings.
+
+## Lab results are not your users' experience
+
+Lighthouse is a **lab** tool. The mobile audit simulates a mid-range phone on a throttled network, which is useful for consistency but is not your actual audience.
+
+PageSpeed Insights shows both: field data from real Chrome users (when the page has enough traffic) and a Lighthouse lab run. If they disagree, field data describes what users experienced, and the lab report helps you investigate why. A high Lighthouse score does not guarantee good real-world performance, and a lower score does not always mean users are suffering.
+
+## Reading the report
+
+The report has a few sections worth understanding:
+
+- **Metrics**: the raw values behind the score.
+- **Diagnostics and Insights**: specific issues found on the page, such as large images or long main-thread tasks, often with an estimated saving.
+- **Passed audits**: things already done well.
+
+Estimated savings are estimates. Start with the issues tied to the metrics with the largest weight and the biggest potential improvement.
+
+## Fixes for Total Blocking Time
+
+TBT adds up the time the main thread was blocked by long tasks (over 50ms) between First Contentful Paint and when the page became reliably interactive. High TBT almost always means too much JavaScript running during load.
+
+- **Ship less JavaScript.** Audit your bundle with a tool such as `@next/bundle-analyzer` or `source-map-explorer` and remove unused dependencies.
+- **Split code.** Load code for a route or a heavy feature only when it is needed.
+- **Defer non-critical scripts.** Analytics, chat widgets, and other third-party tags can often load after the page is interactive.
+- **Break up long tasks.** Split heavy synchronous work into smaller chunks.
+
+```html
+<!-- Download in parallel, run after HTML parsing -->
+<script src="/analytics.js" defer></script>
+```
+
+## Fixes for Largest Contentful Paint
+
+- Identify the LCP element; Lighthouse highlights it.
+- Make sure the LCP image is in the initial HTML and is not lazy-loaded.
+- Give it high priority (`fetchpriority="high"`) and serve it in a modern format at an appropriate size.
+- Reduce server response time with caching or a CDN.
+- Remove render-blocking CSS and fonts from the critical path where possible.
+
+## Fixes for Cumulative Layout Shift
+
+- Set dimensions or `aspect-ratio` on all images, videos, and iframes.
+- Reserve space for content that loads later, such as banners or embeds.
+- Load web fonts with an appropriate `font-display` value and similar fallback fonts.
+
+## Fixes for First Contentful Paint and Speed Index
+
+- Inline or prioritize critical CSS, and avoid large render-blocking stylesheets.
+- Compress text assets (Gzip or Brotli are usually handled by your host).
+- Preconnect to required third-party origins early:
+
+```html
+<link rel="preconnect" href="https://cdn.example.com" />
+```
+
+## Automate checks
+
+Manual audits are easy to forget. Lighthouse CI can run audits on every pull request and fail a build if performance budgets are exceeded, which catches regressions before they reach users.
+
+## Keep the goal in view
+
+The score is a signal, not the goal. A page that scores well but loads key content slowly on real phones is still slow. Use Lighthouse to find problems, measure real users to confirm improvements, and prioritize changes users will notice.
+
+## Key takeaways
+
+- The performance score is a weighted average of five lab metrics; TBT, LCP, and CLS carry the most weight.
+- Scores vary between runs, so compare medians under the same conditions.
+- Lighthouse is a lab tool; check field data to understand real users.
+- Reducing JavaScript, prioritizing the LCP resource, and reserving space for media cover many common issues.
+
+## Conclusion
+
+Improving a Lighthouse score is mostly about the fundamentals: send less code, load the important content first, and keep the layout stable. Treat the score as a debugging aid and real-user data as the measure of success.
