@@ -107,7 +107,7 @@ export function getPersonSchema() {
     givenName: profile.firstName,
     familyName: profile.lastName,
     url: BASE_URL,
-    image: absoluteUrl(DEFAULT_OG_IMAGE),
+    image: absoluteUrl(profile.profileSquareUrl),
     sameAs,
     jobTitle: profile.role,
     worksFor: {

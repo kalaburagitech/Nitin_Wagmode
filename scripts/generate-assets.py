@@ -1,5 +1,5 @@
-"""Generate the portfolio's original artwork: logo, placeholder portrait,
-illustrations, project and blog covers, favicons, and the Open Graph image.
+"""Generate the portfolio's original artwork: project and blog covers,
+favicons, and the Open Graph image (which uses public/assets/profile-square.jpg).
 
 Usage: python scripts/generate-assets.py   (requires Pillow)
 Re-run after changing the name, colors, or project list below.
@@ -17,12 +17,11 @@ NAME = "Nitin Wagmode"
 INITIALS = "NW"
 ROLE = "Frontend Developer"
 STACK = "React.js · Next.js · React Native · TypeScript"
-PRIMARY = "#EAB308"  # matches the site's default "yellow" primary color
-PRIMARY_DARK = "#A16207"
-BG = "#05060D"
-CARD = "#111827"
-LINE = "#334155"
-FONT = "Sora, 'Segoe UI', Arial, sans-serif"
+PRIMARY = "#2DD4BF"  # default "teal" accent (dark theme) from src/data/site.js
+BG = "#0A0D14"
+CARD = "#111621"
+LINE = "#2A3344"
+FONT = "'Space Grotesk', 'Segoe UI', Arial, sans-serif"
 
 
 def write(path, text):
@@ -30,116 +29,6 @@ def write(path, text):
     path.write_text(text.strip() + "\n", encoding="utf-8")
 
 
-# --------------------------------------------------------------------------
-# Logo
-# --------------------------------------------------------------------------
-def logo(fg, accent):
-    return f"""
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60" role="img" aria-label="{NAME} logo">
-  <circle cx="30" cy="30" r="26" fill="none" stroke="{fg}" stroke-width="3.5"/>
-  <path d="M30 4 A26 26 0 0 1 56 30" fill="none" stroke="{accent}" stroke-width="3.5" stroke-linecap="round"/>
-  <text x="30" y="37.5" text-anchor="middle" font-family="{FONT}" font-size="21" font-weight="800" fill="{fg}" letter-spacing="-1">{INITIALS}</text>
-  <circle cx="64" cy="44" r="3" fill="{accent}"/>
-</svg>"""
-
-
-# --------------------------------------------------------------------------
-# Placeholder portrait (shown until a real photo is added)
-# --------------------------------------------------------------------------
-PORTRAIT = f"""
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="{NAME} — profile placeholder">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1F2937"/>
-      <stop offset="1" stop-color="{BG}"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.35" r="0.6">
-      <stop offset="0" stop-color="{PRIMARY}" stop-opacity="0.35"/>
-      <stop offset="1" stop-color="{PRIMARY}" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="figure" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#374151"/>
-      <stop offset="1" stop-color="#1F2937"/>
-    </linearGradient>
-    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-      <path d="M32 0H0V32" fill="none" stroke="#FFFFFF" stroke-opacity="0.04"/>
-    </pattern>
-  </defs>
-  <rect width="400" height="500" fill="url(#bg)"/>
-  <rect width="400" height="500" fill="url(#grid)"/>
-  <rect width="400" height="500" fill="url(#glow)"/>
-  <circle cx="200" cy="190" r="78" fill="url(#figure)" stroke="{PRIMARY}" stroke-opacity="0.35" stroke-width="2"/>
-  <path d="M60 500 C60 380 120 300 200 300 C280 300 340 380 340 500 Z" fill="url(#figure)" stroke="{PRIMARY}" stroke-opacity="0.35" stroke-width="2"/>
-  <text x="200" y="212" text-anchor="middle" font-family="{FONT}" font-size="64" font-weight="800" fill="{PRIMARY}" letter-spacing="-2">{INITIALS}</text>
-  <g font-family="'Fira Code', Consolas, monospace" font-size="15" fill="#9CA3AF" fill-opacity="0.55">
-    <text x="28" y="48">&lt;Frontend /&gt;</text>
-    <text x="268" y="84">{{ react }}</text>
-    <text x="300" y="300">=&gt;</text>
-    <text x="34" y="320">tsx</text>
-  </g>
-</svg>"""
-
-
-# --------------------------------------------------------------------------
-# About illustration: laptop dashboard + phone app
-# --------------------------------------------------------------------------
-ABOUT = f"""
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 560" role="img" aria-label="Web dashboard and mobile app illustration">
-  <defs>
-    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.55">
-      <stop offset="0" stop-color="{PRIMARY}" stop-opacity="0.28"/>
-      <stop offset="1" stop-color="{PRIMARY}" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="480" height="560" fill="url(#glow)"/>
-  <!-- laptop -->
-  <rect x="40" y="150" width="330" height="210" rx="14" fill="{CARD}" stroke="{LINE}" stroke-width="3"/>
-  <rect x="56" y="166" width="298" height="178" rx="6" fill="#0B1020"/>
-  <rect x="56" y="166" width="62" height="178" fill="#151E2F"/>
-  <rect x="68" y="182" width="38" height="8" rx="4" fill="{PRIMARY}"/>
-  <rect x="68" y="202" width="38" height="6" rx="3" fill="{LINE}"/>
-  <rect x="68" y="216" width="30" height="6" rx="3" fill="{LINE}"/>
-  <rect x="68" y="230" width="34" height="6" rx="3" fill="{LINE}"/>
-  <rect x="132" y="182" width="66" height="44" rx="6" fill="#1E293B"/>
-  <rect x="206" y="182" width="66" height="44" rx="6" fill="#1E293B"/>
-  <rect x="280" y="182" width="62" height="44" rx="6" fill="#1E293B"/>
-  <rect x="140" y="194" width="30" height="8" rx="4" fill="{PRIMARY}"/>
-  <rect x="214" y="194" width="30" height="8" rx="4" fill="#38BDF8"/>
-  <rect x="288" y="194" width="30" height="8" rx="4" fill="#22C55E"/>
-  <polyline points="140,320 170,296 200,306 232,272 262,284 296,250 334,262" fill="none" stroke="{PRIMARY}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="132" y="238" width="210" height="96" rx="6" fill="none" stroke="{LINE}" stroke-width="2"/>
-  <path d="M20 360 H390 L372 382 H38 Z" fill="#1F2937" stroke="{LINE}" stroke-width="3" stroke-linejoin="round"/>
-  <!-- phone -->
-  <rect x="318" y="230" width="128" height="250" rx="20" fill="{CARD}" stroke="{PRIMARY}" stroke-width="3"/>
-  <rect x="330" y="252" width="104" height="206" rx="8" fill="#0B1020"/>
-  <rect x="364" y="240" width="36" height="5" rx="2.5" fill="{LINE}"/>
-  <rect x="340" y="264" width="60" height="8" rx="4" fill="{PRIMARY}"/>
-  <rect x="340" y="284" width="84" height="38" rx="6" fill="#1E293B"/>
-  <rect x="340" y="330" width="84" height="38" rx="6" fill="#1E293B"/>
-  <rect x="340" y="376" width="84" height="38" rx="6" fill="#1E293B"/>
-  <circle cx="354" cy="303" r="7" fill="#22C55E"/>
-  <circle cx="354" cy="349" r="7" fill="#38BDF8"/>
-  <circle cx="354" cy="395" r="7" fill="{PRIMARY}"/>
-  <rect x="368" y="298" width="46" height="5" rx="2.5" fill="{LINE}"/>
-  <rect x="368" y="344" width="40" height="5" rx="2.5" fill="{LINE}"/>
-  <rect x="368" y="390" width="44" height="5" rx="2.5" fill="{LINE}"/>
-  <rect x="352" y="428" width="60" height="18" rx="9" fill="{PRIMARY}"/>
-  <!-- floating code chips -->
-  <g font-family="'Fira Code', Consolas, monospace" font-size="15" font-weight="600">
-    <rect x="44" y="70" width="170" height="40" rx="12" fill="{CARD}" stroke="{LINE}" stroke-width="2"/>
-    <text x="60" y="96" fill="#61DAFB">&lt;App /&gt;</text>
-    <text x="130" y="96" fill="#9CA3AF">.tsx</text>
-    <rect x="250" y="110" width="170" height="40" rx="12" fill="{CARD}" stroke="{LINE}" stroke-width="2"/>
-    <text x="266" y="136" fill="{PRIMARY}">useSelector()</text>
-    <rect x="40" y="420" width="190" height="40" rx="12" fill="{CARD}" stroke="{LINE}" stroke-width="2"/>
-    <text x="56" y="446" fill="#22C55E">await fetch(api)</text>
-  </g>
-</svg>"""
-
-
-# --------------------------------------------------------------------------
-# Covers (projects + blog) in the reference's blog-cover visual language
-# --------------------------------------------------------------------------
 def wrap(text, max_len):
     lines, line = [], ""
     for word in text.split():
@@ -175,10 +64,9 @@ def cover(title, label, subtitle, accent, motif, width=1200, height=675):
       <path d="M42 0H0V42" fill="none" stroke="{LINE}" stroke-opacity="0.35"/>
     </pattern>
   </defs>
-  <rect width="{width}" height="{height}" fill="#0B1020"/>
+  <rect width="{width}" height="{height}" fill="{BG}"/>
   <rect width="{width}" height="{height}" fill="url(#bg)"/>
   <rect width="{width}" height="{height}" fill="url(#grid)" opacity="0.55"/>
-  <rect x="64" y="58" width="{width - 128}" height="{height - 116}" rx="30" fill="{CARD}" fill-opacity="0.9" stroke="{LINE}" stroke-width="2"/>
   <rect x="96" y="100" width="{len(label) * 14 + 60}" height="50" rx="25" fill="{accent}" fill-opacity="0.16" stroke="{accent}" stroke-opacity="0.8"/>
   <text x="126" y="133" fill="{accent}" font-family="{FONT}" font-size="21" font-weight="800">{escape(label)}</text>
   {title_svg}
@@ -317,15 +205,12 @@ def hex_rgb(value):
 def icon_png(size, transparent=False):
     scale = 4
     s = size * scale
-    background = (0, 0, 0, 0) if transparent else hex_rgb(BG) + (255,)
-    img = Image.new("RGBA", (s, s), background)
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0) if transparent else hex_rgb(BG) + (255,))
     draw = ImageDraw.Draw(img)
-    pad = s * 0.1
-    width = max(2, int(s * 0.055))
-    draw.ellipse([pad, pad, s - pad, s - pad], outline=hex_rgb("#F8FAFC"), width=width)
-    draw.arc([pad, pad, s - pad, s - pad], start=-90, end=0, fill=hex_rgb(PRIMARY), width=width)
-    font = load_font(int(s * 0.36))
-    draw.text((s / 2, s / 2), INITIALS, font=font, fill=hex_rgb(PRIMARY), anchor="mm")
+    pad = 0 if not transparent else s * 0.04
+    draw.rounded_rectangle([pad, pad, s - pad, s - pad], radius=s * 0.22, fill=hex_rgb(PRIMARY))
+    font = load_font(int(s * 0.42))
+    draw.text((s / 2, s / 2 + s * 0.01), INITIALS, font=font, fill=hex_rgb(BG), anchor="mm")
     return img.resize((size, size), Image.LANCZOS)
 
 
@@ -333,33 +218,34 @@ def og_image():
     w, h = 1200, 630
     img = Image.new("RGB", (w, h), hex_rgb(BG))
     draw = ImageDraw.Draw(img)
-    for x in range(0, w, 48):
-        draw.line([(x, 0), (x, h)], fill=(20, 24, 36))
-    for y in range(0, h, 48):
-        draw.line([(0, y), (w, y)], fill=(20, 24, 36))
+    for x in range(0, w, 56):
+        draw.line([(x, 0), (x, h)], fill=(18, 23, 33))
+    for y in range(0, h, 56):
+        draw.line([(0, y), (w, y)], fill=(18, 23, 33))
     glow = Image.new("RGB", (w, h), hex_rgb(PRIMARY))
     mask = Image.new("L", (w, h), 0)
-    ImageDraw.Draw(mask).ellipse([760, -220, 1360, 380], fill=70)
-    mask = mask.filter(ImageFilter.GaussianBlur(120))
-    img.paste(glow, (0, 0), mask)
+    ImageDraw.Draw(mask).ellipse([700, -200, 1300, 400], fill=60)
+    img.paste(glow, (0, 0), mask.filter(ImageFilter.GaussianBlur(140)))
+
+    photo_path = ASSETS / "profile-square.jpg"
+    if photo_path.exists():
+        size = 430
+        photo = Image.open(photo_path).convert("RGB").resize((size, size), Image.LANCZOS)
+        round_mask = Image.new("L", (size, size), 0)
+        ImageDraw.Draw(round_mask).rounded_rectangle([0, 0, size, size], radius=40, fill=255)
+        img.paste(photo, (w - size - 80, (h - size) // 2), round_mask)
+
     draw = ImageDraw.Draw(img)
-    draw.line([(80, 150), (130, 150)], fill=hex_rgb(PRIMARY), width=3)
-    draw.text((145, 150), "PORTFOLIO", font=load_font(26), fill=hex_rgb(PRIMARY), anchor="lm")
-    draw.text((80, 250), NAME, font=load_font(92), fill=(248, 250, 252), anchor="lm")
-    draw.text((80, 350), ROLE, font=load_font(48), fill=hex_rgb(PRIMARY), anchor="lm")
-    draw.text((80, 420), STACK, font=load_font(30, bold=False), fill=(148, 163, 184), anchor="lm")
-    draw.text((80, 530), "Bengaluru, India  ·  Open to relocation & remote", font=load_font(26, bold=False), fill=(148, 163, 184), anchor="lm")
-    badge = icon_png(200, transparent=True)
-    img.paste(badge, (920, 330), badge)
+    draw.rounded_rectangle([80, 120, 80 + 62, 182], radius=14, fill=hex_rgb(PRIMARY))
+    draw.text((111, 152), INITIALS, font=load_font(28), fill=hex_rgb(BG), anchor="mm")
+    draw.text((80, 262), NAME, font=load_font(76), fill=(243, 245, 250), anchor="lm")
+    draw.text((80, 346), ROLE, font=load_font(40), fill=hex_rgb(PRIMARY), anchor="lm")
+    draw.text((80, 410), STACK, font=load_font(26, bold=False), fill=(150, 160, 178), anchor="lm")
+    draw.text((80, 520), "Bengaluru, India  ·  Open to relocation & remote", font=load_font(24, bold=False), fill=(150, 160, 178), anchor="lm")
     return img
 
 
 def main():
-    write(ASSETS / "logo-on-dark.svg", logo("#F8FAFC", PRIMARY))
-    write(ASSETS / "logo-on-light.svg", logo("#0F172A", PRIMARY_DARK))
-    write(ASSETS / "profile-placeholder.svg", PORTRAIT)
-    write(ASSETS / "about-illustration.svg", ABOUT)
-
     for slug, title, label, subtitle, accent, motif in PROJECTS:
         write(ASSETS / "projects" / f"{slug}.svg", cover(title, label, subtitle, accent, motif))
     for slug, title, label, subtitle, accent, motif in BLOG_COVERS:

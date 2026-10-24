@@ -1,142 +1,152 @@
 # Nitin Wagmode — Portfolio
 
-Personal portfolio of **Nitin Wagmode**, Frontend Developer (React.js · Next.js · React Native · TypeScript), based in Bengaluru, India.
+Personal portfolio of **Nitin Wagmode**, Frontend Developer (React.js · Next.js · React Native · TypeScript) based in Bengaluru, India.
 
-Built with Next.js 14 (App Router), React 18, Tailwind CSS, Framer Motion, and Redux Toolkit. The visual design and interactions are adapted from an open-source portfolio template ([MuskuNishitha/Portfolio](https://github.com/MuskuNishitha/Portfolio)); all personal content, artwork, and copy here are Nitin's own.
+Built with Next.js 14 (App Router), React 18, Tailwind CSS, Framer Motion, and Redux Toolkit.
 
 ## Features
 
-- **Pages:** Home, About (profile + filterable skills), Projects (category filter), Experience (timeline), Resume (experience, education, results, PDF download), Contact, Blog (search, categories, article pages with table of contents and related posts), Skills, and Services.
-- **Dark / light theme** plus an accent-color picker, saved per visitor and applied before first paint.
-- **Working contact form** (Contact page and the "Hire Me" dialog): client and server validation, duplicate-submit protection, honeypot spam field, per-instance rate limiting, and an email fallback whenever email delivery isn't configured or fails.
-- **SEO:** per-page metadata, canonical URLs, Open Graph/Twitter cards, `sitemap.xml`, `robots.txt`, web manifest, and JSON-LD (Person, WebSite, Breadcrumb, Blog, BlogPosting). Pages are server-rendered, so crawlers and link previews see full content.
-- **Accessibility:** semantic landmarks, skip link, labelled form fields with announced errors, `aria-current`/`aria-pressed` states, Escape-to-close dialogs, visible focus rings, and `prefers-reduced-motion` support.
-- **Blog drafts:** posts with `draft: true` are visible in development and hidden from production until reviewed.
+- **Pages:** Home, About, Projects (category filter), Experience (timeline), Skills (search + category filter), Services, Resume (web version + PDF download), Blog (search, categories, article pages with table of contents and related posts), Contact, plus a custom 404 page and a loading state.
+- **Design system:** light and dark themes with five accent colors (teal, indigo, coral, amber, lime), saved per visitor and applied before first paint. Tokens live in `src/app/globals.css`; accents in `src/data/site.js`.
+- **Contact form** on `/contact` and in the header's "Hire me" dialog: sends the enquiry to `CONTACT_TO_EMAIL` (visitor set as Reply-To), then an automatic confirmation email to the visitor. One validation module (`src/lib/contactValidation.js`) is shared by browser and server; email logic lives in `src/lib/email.js`. Includes a honeypot field, content-type and size checks, duplicate-submission protection, truthful partial-failure reporting, accessible status messages, and a `mailto:` fallback.
+- **WhatsApp click-to-chat** (`https://wa.me/916362050656`) on the contact page, prefilled from the visitor's name and message. Nothing is sent automatically.
+- **Rate limiting:** 5 messages per 10 minutes per IP, stored in Upstash Redis when configured (shared across serverless instances), otherwise in memory.
+- **SEO:** per-page metadata, canonical URLs, Open Graph/Twitter cards with a generated social image, `sitemap.xml`, `robots.txt`, web manifest, and JSON-LD (Person, WebSite, BreadcrumbList, Blog, BlogPosting). Pages are server-rendered.
+- **Accessibility:** semantic landmarks and heading order, skip link, labelled fields with announced errors, `aria-current`/`aria-pressed` states, native `<dialog>` for the contact dialog, Escape to close menus, focus return, visible focus rings, and `prefers-reduced-motion` support (cursor ring, scroll reveals, route bar, and CSS animation are disabled or reduced).
+- **Blog drafts:** posts with `draft: true` show in development and are hidden in production until published.
 
 ## Tech stack
 
 | Area | Tools |
 | --- | --- |
 | Framework | Next.js 14 (App Router), React 18 |
-| Styling | Tailwind CSS 3, CSS variables for theming |
-| Animation | Framer Motion |
-| State | Redux Toolkit, React Redux |
+| Styling | Tailwind CSS 3 with CSS-variable design tokens; Space Grotesk, Inter, and JetBrains Mono via `next/font` |
+| Animation | Framer Motion (`MotionConfig reducedMotion="user"`) |
+| State | Redux Toolkit (contact form status) |
 | Email | Nodemailer (Gmail App Password or any SMTP provider) |
+| Rate limiting | Upstash Redis REST API (optional, no extra dependency) |
 | Icons | react-icons |
 
 ## Project structure
 
 ```
-content/blogs/          Blog articles (Markdown with frontmatter)
-public/                 Static files: resume.pdf, icons, og-image.png, assets/
-scripts/
-  generate-assets.py    Regenerates logo, placeholder portrait, covers, icons, OG image
+content/blogs/            Blog articles (Markdown with frontmatter)
+public/                   resume.pdf, icons, og-image.png, assets/ (photo, covers)
+scripts/generate-assets.py  Regenerates project/blog covers, icons, and the OG image
 src/
-  app/                  Routes, metadata, sitemap.js, robots.js, manifest.js
-    api/contact/        Contact form endpoint (server-only)
-  components/           Shared components (theme, cursor, blog, icons, ...)
-  data/                 ← Edit these files to update site content
-    profile.js          Name, contact details, links, summary, education, SITE_URL
-    experience.js       Work history
-    projects.js         Projects and categories
-    skills.js           Skill groups
-    navigation.js       Header navigation
-  global/               Header, footer, banners, social links
-  lib/                  Content view-models, blog loader, SEO helpers
-  mainPages/            Page-level section components
-  redux/                Store and contact slice
+  app/                    Routes, metadata, sitemap.js, robots.js, manifest.js
+    api/contact/          Contact endpoint (server-only)
+  components/
+    layout/               SiteHeader, MobileNav, HireDialog, SiteFooter, BackToTop
+    home/                 Home page sections
+    contact/              ContactForm + useContactForm hook
+    projects/ skills/ experience/ blog/   Section components
+    theme/                ThemeProvider, ThemeToggle, AccentPicker
+    motion/               Reveal, RouteProgress, CursorRing
+    ui/                   PageHeader, SectionHeading, FilterBar, SocialLinks, Logo, SkillIcon, JsonLd
+  data/                   ← Edit these files to update site content
+    profile.js            Name, contact details, links, summary, education, SITE_URL
+    experience.js         Work history
+    projects.js           Projects and categories
+    skills.js             Skill groups
+    services.js           Services
+    achievements.js       Resume results (only figures stated on the resume)
+    contact.js            Contact copy and enquiry topics
+    navigation.js         Header navigation
+    site.js               Default theme and accent palette
+  lib/                    Blog loader, SEO helpers, theme bootstrap, validation, rate limiter
+  redux/                  Store and contact slice
 ```
 
 ## Getting started
 
-Requirements: **Node.js 18.17+** (developed on Node 20) and **npm**.
+Requirements: **Node.js 18.17+** and **npm**.
 
 ```bash
-npm ci                 # install exact dependencies from package-lock.json
-cp .env.example .env.local   # optional — see Environment variables
-npm run dev            # http://localhost:3000
+npm ci                        # install exact dependencies from package-lock.json
+cp .env.example .env.local    # optional — see Environment variables
+npm run dev                   # http://localhost:3000
 ```
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Development server with hot reload (draft posts visible) |
+| `npm run dev` | Development server (draft posts visible) |
 | `npm run lint` | ESLint (`next/core-web-vitals`) |
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
-| `npm run generate:assets` | Regenerate artwork (needs Python 3 + Pillow) |
+| `npm run generate:assets` | Regenerate covers, icons, and OG image (needs Python 3 + Pillow) |
 
 ## Environment variables
 
-All are optional — the site builds and runs without any of them. See [`.env.example`](.env.example).
+All are optional; the site builds and runs without them. See [`.env.example`](.env.example).
 
 | Variable | Used for |
 | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Production URL for canonical links, sitemap, robots, and Open Graph (no trailing slash). |
-| `EMAIL_USER`, `EMAIL_PASS` | Gmail sending: address + a Google **App Password**. |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | Any SMTP provider (takes precedence over Gmail when set). |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` | SMTP server for the contact form. Gmail: `smtp.gmail.com`, `465`, `true`, your address, a Google App Password. |
 | `CONTACT_TO_EMAIL` | Inbox for enquiries (defaults to the email in `src/data/profile.js`). |
-| `CONTACT_FROM_EMAIL` | Sender address, if your provider requires a verified sender. |
+| `CONTACT_FROM_EMAIL` | Sender for both emails (defaults to `SMTP_USER`). |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Shared rate limiting and duplicate-submission protection for the contact form. |
 | `NEXT_PUBLIC_GA_ID` | Google Analytics 4 ID. Analytics is off when empty. |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Google Search Console verification code. |
 | `SHOW_DRAFT_POSTS` | `true` to include draft posts in a production build (build-time). |
 
-Server-only variables (no `NEXT_PUBLIC_` prefix) are never sent to the browser.
+Server-only variables (no `NEXT_PUBLIC_` prefix) are never sent to the browser. Never commit `.env.local`.
 
-### Contact form setup (Gmail)
+### Contact email (Gmail)
 
-1. Turn on 2-Step Verification for the Google account.
-2. Google Account → Security → **App passwords** → create one for "Mail".
-3. Set `EMAIL_USER=you@gmail.com` and `EMAIL_PASS=<the 16-character app password>` locally and in Vercel.
-4. Redeploy, then send a test message from `/contact` and check the inbox (and spam folder).
+1. Turn on 2-Step Verification for the Google account, then create an **App password** (Google Account → Security → App passwords).
+2. In Vercel → Settings → Environment Variables set `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `SMTP_SECURE=true`, `SMTP_USER=<gmail address>`, `SMTP_PASS=<app password>`, `CONTACT_TO_EMAIL`, and `CONTACT_FROM_EMAIL` (the same Gmail address).
+3. Redeploy, send a test message from `/contact`, and check both inboxes (and spam).
 
-Without these variables, the form replies honestly that email isn't configured and offers a pre-filled `mailto:` link. It never pretends to have sent a message.
+For local testing, put the same variables in `.env.local` (git-ignored), never in committed files.
+
+The API reports only what it can verify: `200` with `confirmationSent: true|false` once the enquiry is accepted by the SMTP server, `502` if the enquiry fails (no confirmation is sent), `503` if SMTP isn't configured. SMTP acceptance doesn't guarantee inbox delivery.
+
+### Tests
+
+`npm run test:integration` builds the app and runs `tests/contact.integration.test.mjs`. It starts the production server against a local fake SMTP server (implicit TLS, like Gmail on 465) and checks validation, both emails, HTML escaping, partial failures, duplicate protection, auth failure, missing config, rate limiting, the WhatsApp link, the resume PDF, and that no SMTP settings reach client bundles. Requires `openssl` on PATH. No real email is sent. (`npm run test:contact` reruns the tests against an existing build.)
+
+### Rate limiting (Upstash)
+
+1. Create a Redis database at [upstash.com](https://upstash.com) (a free tier is available; check their current pricing page for limits).
+2. Copy the **REST URL** and **REST token** into `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` in Vercel.
+3. Redeploy. Each accepted submission uses two Redis commands.
+
+If Upstash is unreachable the endpoint logs the error and falls back to the in-memory limiter rather than rejecting real enquiries.
 
 ## Updating content
 
-- **Profile, links, summary:** `src/data/profile.js`. Add a GitHub URL to `socials.github` to show GitHub buttons across the site.
-- **Profile photo:** add e.g. `public/assets/profile.jpg` and set `profileImageUrl: "/assets/profile.jpg"`.
+- **Profile, links, summary:** `src/data/profile.js`. Add a URL to `socials.github` to show GitHub links.
+- **Photo:** `public/assets/profile.webp` (transparent portrait, 640×800) and `public/assets/profile-square.jpg` (800×800, used for structured data and the OG image). Run `npm run generate:assets` after replacing the square photo to rebuild the OG image.
 - **Resume:** replace `public/resume.pdf`.
-- **Projects / experience / skills:** edit the matching file in `src/data/`. Add a screenshot path to a project's `image` field, or a URL to `liveLink`/`githubLink` to show link buttons.
-- **Blog:** add a `.mdx` file to `content/blogs/` (copy an existing post's frontmatter). Set `draft: false` to publish.
-
-### Draft blog posts — review needed
-
-The five articles in `content/blogs/` were drafted for this portfolio and are marked `draft: true`. Review, edit, and set `draft: false` on each one you want to publish; until then the production blog shows an "Articles are on the way" message.
+- **Projects / experience / skills / services:** edit the matching file in `src/data/`. Add a URL to a project's `liveLink`/`githubLink` to show link buttons.
+- **Blog:** add a `.mdx` file to `content/blogs/` (copy an existing post's frontmatter) and set `draft: false` to publish. The five existing articles are drafts awaiting review.
 
 ## Deployment (Vercel)
 
-1. Push this repository to your own GitHub account or organization.
-2. In Vercel: **Add New → Project → Import** the repository.
-3. Framework preset: **Next.js** (auto-detected). Build command `npm run build`, install command `npm ci`, output: default.
-4. Add environment variables (at least `NEXT_PUBLIC_SITE_URL` and the email variables) under **Settings → Environment Variables** for Production (and Preview if wanted).
-5. Deploy. Every branch push creates a **Preview** deployment; pushes or merges to `main` deploy to **Production**.
-6. Custom domain: **Settings → Domains → Add**, follow the DNS instructions, then set `NEXT_PUBLIC_SITE_URL` to the domain and redeploy.
+1. Push this repository to GitHub.
+2. Vercel → **Add New → Project → Import** the repository. Next.js is auto-detected.
+3. Add environment variables (at least `NEXT_PUBLIC_SITE_URL`, the email variables, and the Upstash variables) for Production.
+4. Deploy. Pushes to `main` deploy to Production; other branches get Preview deployments.
+5. Custom domain: **Settings → Domains**, then set `NEXT_PUBLIC_SITE_URL` to it and redeploy.
 
 ### Post-deploy checklist
 
-- [ ] Home, About, Projects, Experience, Resume, Contact, Blog, Skills, and Services load without console errors.
+- [ ] All routes load without console errors.
 - [ ] `/resume.pdf` downloads.
-- [ ] Contact form and Hire Me dialog deliver a test email.
+- [ ] The contact form and "Hire me" dialog deliver a test email.
 - [ ] `/sitemap.xml` and `/robots.txt` show the production domain.
-- [ ] A link preview (e.g. pasting the URL in LinkedIn's post composer) shows the Open Graph image.
-- [ ] Theme toggle and color picker persist across reloads.
-
-## Troubleshooting
-
-- **`EADDRINUSE: :3000`** — another server is running; stop it or use `npm run dev -- -p 3001`.
-- **Contact form returns "isn't connected to email yet"** — email env vars are missing in that environment; add them and redeploy.
-- **Gmail `Invalid login` / `535`** — use an App Password, not the account password.
-- **Changed `NEXT_PUBLIC_*` or `SHOW_DRAFT_POSTS` but nothing changed** — these are read at build time; redeploy.
-- **Browserslist "caniuse-lite is outdated" warning** — harmless; run `npx update-browserslist-db@latest` to refresh.
+- [ ] A link preview shows the Open Graph image.
+- [ ] Theme and accent choices persist across reloads.
 
 ## Known limitations
 
-- No professional photo yet — a neutral placeholder is shown until one is added.
-- No public GitHub profile URL or project live links were provided, so those buttons are hidden (KLB Connect links to the Kalaburagi Tech website).
-- Project images are original illustrations, not product screenshots.
-- Rate limiting is per serverless instance (best-effort); use a provider like Upstash for strict limits.
-- The blog articles are drafts pending review.
+- No public GitHub profile or project live links were provided, so those buttons are hidden (KLB Connect links to the Kalaburagi Tech website).
+- Project and blog images are generated illustrations, not product screenshots.
+- The profile photo was cleaned up from a scanned passport photo; a professionally shot photo would look better.
+- Blog articles are drafts pending review, so the production blog shows an "Articles are on the way" message.
 
-## Credits
+## License
 
-Design and interaction patterns adapted from [MuskuNishitha/Portfolio](https://github.com/MuskuNishitha/Portfolio). All personal content, articles, and generated artwork belong to Nitin Wagmode.
+All personal content, articles, photos, and artwork © Nitin Wagmode. Third-party packages are used under their own licenses (see `node_modules/*/LICENSE`).

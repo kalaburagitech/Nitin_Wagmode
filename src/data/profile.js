@@ -4,7 +4,7 @@
 // Production URL used for canonical links, sitemap, and Open Graph tags.
 // Set NEXT_PUBLIC_SITE_URL in Vercel once the final domain is known.
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://nitin-wagmode-portfolio.vercel.app"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://nitin-wagmode.vercel.app"
 ).replace(/\/$/, "");
 
 export const profile = {
@@ -29,15 +29,19 @@ export const profile = {
   email: "wagmodenitin60@gmail.com",
   phone: "+91 6362050656",
   phoneHref: "tel:+916362050656",
+  // International format without "+" or spaces, as wa.me expects.
+  whatsapp: "916362050656",
   workPreference: "Open to relocation across India and remote work",
   available: true,
   currentCompany: "Kalaburagi Tech",
   resumeUrl: "/resume.pdf",
-  // No professional photo supplied yet. Replace with e.g. "/assets/profile.jpg"
-  // after adding the photo to public/assets.
-  profileImageUrl: "/assets/profile-placeholder.svg",
+  // Background-removed portrait (transparent WebP) and a square version on
+  // a branded backdrop for avatars and social cards.
+  profileImageUrl: "/assets/profile.webp",
+  profileSquareUrl: "/assets/profile-square.jpg",
+  freelance: { name: "Kalaburagi Tech", url: "https://kalaburagitech.com" },
   socials: {
-    linkedin: "https://linkedin.com/in/nitin-wagmode-91410631b/",
+    linkedin: "https://www.linkedin.com/in/nitin-wagmode-91410631b/",
     // GitHub profile not supplied. Add the URL here to show GitHub links
     // across the site; they stay hidden while this is empty.
     github: "",

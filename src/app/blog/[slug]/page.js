@@ -15,6 +15,7 @@ import {
   getBreadcrumbSchema,
 } from "@/lib/seo-utils";
 import { notFound } from "next/navigation";
+import JsonLd from "@/components/ui/JsonLd";
 import { profile } from "@/data/profile";
 
 // Only posts known at build time exist; unknown slugs 404. This keeps
@@ -112,12 +113,7 @@ export default function BlogPostPage({ params }) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify([articleSchema, breadcrumbSchema]),
-        }}
-      />
+      <JsonLd data={[articleSchema, breadcrumbSchema]} />
       <BlogArticle
         post={post}
         blocks={blocks}

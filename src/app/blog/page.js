@@ -1,4 +1,6 @@
 import BlogIndex from "@/components/blog/BlogIndex";
+import PageHeader from "@/components/ui/PageHeader";
+import JsonLd from "@/components/ui/JsonLd";
 import {
   BLOG_BASE_URL,
   getAllBlogPostSummaries,
@@ -52,13 +54,16 @@ export default function BlogPage() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify([breadcrumbSchema, blogSchema]),
-        }}
+      <JsonLd data={[breadcrumbSchema, blogSchema]} />
+      <PageHeader
+        crumbs={[{ label: "Blog" }]}
+        eyebrow="Writing"
+        title="Notes from real builds"
+        intro="Articles on React, Next.js, React Native, TypeScript, Redux Toolkit, API integration, and frontend performance."
       />
-      <BlogIndex posts={postSummaries} categories={categories} />
+      <section className="shell py-16">
+        <BlogIndex posts={postSummaries} categories={categories} />
+      </section>
     </>
   );
 }

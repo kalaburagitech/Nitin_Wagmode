@@ -2,23 +2,22 @@
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="675" gradientUnits="userSpaceOnUse">
       <stop stop-color="#22C55E" stop-opacity="0.32"/>
-      <stop offset="0.5" stop-color="#111827"/>
-      <stop offset="1" stop-color="#EAB308" stop-opacity="0.22"/>
+      <stop offset="0.5" stop-color="#111621"/>
+      <stop offset="1" stop-color="#2DD4BF" stop-opacity="0.22"/>
     </linearGradient>
     <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
-      <path d="M42 0H0V42" fill="none" stroke="#334155" stroke-opacity="0.35"/>
+      <path d="M42 0H0V42" fill="none" stroke="#2A3344" stroke-opacity="0.35"/>
     </pattern>
   </defs>
-  <rect width="1200" height="675" fill="#0B1020"/>
+  <rect width="1200" height="675" fill="#0A0D14"/>
   <rect width="1200" height="675" fill="url(#bg)"/>
   <rect width="1200" height="675" fill="url(#grid)" opacity="0.55"/>
-  <rect x="64" y="58" width="1072" height="559" rx="30" fill="#111827" fill-opacity="0.9" stroke="#334155" stroke-width="2"/>
   <rect x="96" y="100" width="228" height="50" rx="25" fill="#22C55E" fill-opacity="0.16" stroke="#22C55E" stroke-opacity="0.8"/>
-  <text x="126" y="133" fill="#22C55E" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="800">React Native</text>
-  <text x="96" y="230" fill="#F8FAFC" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">Offline Sync in React</text><text x="96" y="294" fill="#F8FAFC" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">Native</text>
-  <text x="96" y="368" fill="#94A3B8" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="24">Queueing field data until the network</text><text x="96" y="402" fill="#94A3B8" font-family="Sora, 'Segoe UI', Arial, sans-serif" font-size="24">comes back</text>
+  <text x="126" y="133" fill="#22C55E" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="800">React Native</text>
+  <text x="96" y="230" fill="#F8FAFC" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">Offline Sync in React</text><text x="96" y="294" fill="#F8FAFC" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="54" font-weight="800">Native</text>
+  <text x="96" y="368" fill="#94A3B8" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="24">Queueing field data until the network</text><text x="96" y="402" fill="#94A3B8" font-family="'Space Grotesk', 'Segoe UI', Arial, sans-serif" font-size="24">comes back</text>
   <g transform="translate(760 150)">
-  <circle cx="165" cy="190" r="140" fill="#0B1020" stroke="#334155" stroke-width="3"/>
+  <circle cx="165" cy="190" r="140" fill="#0B1020" stroke="#2A3344" stroke-width="3"/>
   <path d="M95 160 A75 75 0 0 1 230 140" fill="none" stroke="#22C55E" stroke-width="12" stroke-linecap="round"/>
   <path d="M235 220 A75 75 0 0 1 100 240" fill="none" stroke="#38BDF8" stroke-width="12" stroke-linecap="round"/>
   <path d="M215 112 L240 140 L205 152 Z" fill="#22C55E"/>

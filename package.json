@@ -1,6 +1,8 @@
 {
   "name": "nitin-wagmode-portfolio",
   "version": "1.0.0",
+  "description": "Personal portfolio of Nitin Wagmode, Frontend Developer (React.js, Next.js, React Native, TypeScript).",
+  "author": "Nitin Wagmode <wagmodenitin60@gmail.com>",
   "private": true,
   "engines": {
     "node": ">=18.17.0"
@@ -10,7 +12,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate:assets": "python scripts/generate-assets.py"
+    "generate:assets": "python scripts/generate-assets.py",
+    "test:integration": "next build && node --test tests/",
+    "test:contact": "node --test tests/"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",

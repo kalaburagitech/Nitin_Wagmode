@@ -1,30 +1,37 @@
-import { Sora, Russo_One } from "next/font/google";
-import "./globals.css";
-import Header from "@/global/Header";
-import Footer from "@/global/Footer";
-import ThemeProvider from "@/components/ThemeProvider";
-import { Providers } from "@/components/ReduxProvider";
-import CustomCursor from "@/components/CustomCursor";
-import RouteTransition from "@/components/RouteTransition";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import Script from "next/script";
+import "./globals.css";
+import { Providers } from "@/components/ReduxProvider";
+import ThemeProvider from "@/components/theme/ThemeProvider";
+import SiteHeader from "@/components/layout/SiteHeader";
+import SiteFooter from "@/components/layout/SiteFooter";
+import CursorRing from "@/components/motion/CursorRing";
+import RouteProgress from "@/components/motion/RouteProgress";
 import { getPersonSchema, getWebsiteSchema, DEFAULT_OG_IMAGE } from "@/lib/seo-utils";
+import { accentStyles, themeBootstrap } from "@/lib/theme";
 import { profile, SITE_URL } from "@/data/profile";
-import { fallbackSettings } from "@/lib/publicContent";
+import { DEFAULT_ACCENT, DEFAULT_THEME } from "@/data/site";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const GOOGLE_SITE_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 
-const sora = Sora({
+const display = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["300", "400", "600", "700", "800"],
-  variable: "--font-sora",
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
   display: "swap",
 });
 
-const russoOne = Russo_One({
+const body = Inter({
   subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-russo",
+  variable: "--font-body",
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -34,10 +41,9 @@ const SITE_DESCRIPTION = `Portfolio of ${profile.fullName}, a ${profile.role} in
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#05060d" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f5f1" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0d14" },
   ],
 };
 
@@ -98,9 +104,6 @@ export const metadata = {
       "max-snippet": -1,
     },
   },
-  alternates: {
-    canonical: "/",
-  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -120,32 +123,21 @@ export const metadata = {
     : {}),
 };
 
-// Applied before first paint so a saved light/dark choice and accent color
-// don't flash. Mirrors ThemeProvider's defaults.
-const themeBootstrap = `
-(function () {
-  var root = document.documentElement;
-  var theme = null, color = null;
-  try {
-    theme = localStorage.getItem('theme');
-    color = localStorage.getItem('primary-color');
-  } catch (e) {}
-  var dark = theme ? theme === 'dark' : ${fallbackSettings.defaultTheme !== "light"};
-  root.classList.toggle('dark', dark);
-  root.setAttribute('data-primary', color || '${fallbackSettings.defaultPrimaryColor}');
-})();
-`;
-
 export default function RootLayout({ children }) {
   return (
     <html
-      lang="en"
-      className={`dark ${sora.variable} ${russoOne.variable}`}
-      data-primary={fallbackSettings.defaultPrimaryColor}
+      lang="en-IN"
+      className={`${DEFAULT_THEME === "dark" ? "dark " : ""}${display.variable} ${body.variable} ${mono.variable}`}
+      data-accent={DEFAULT_ACCENT}
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
+        <style dangerouslySetInnerHTML={{ __html: accentStyles }} />
+        {/* Without JavaScript, scroll-reveal content would stay hidden. */}
+        <noscript>
+          <style>{`[style*="opacity:0"]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -153,10 +145,10 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className="font-sora overflow-x-hidden bg-white dark:bg-gray-900 transition-colors duration-300">
+      <body className="overflow-x-hidden">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-white"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-on-accent"
         >
           Skip to content
         </a>
@@ -164,28 +156,22 @@ export default function RootLayout({ children }) {
         {/* Google Analytics — only when NEXT_PUBLIC_GA_ID is configured */}
         {GA_ID && (
           <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="afterInteractive"
-            />
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
             <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_ID}');
-              `}
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',${JSON.stringify(GA_ID)});`}
             </Script>
           </>
         )}
 
         <Providers>
           <ThemeProvider>
-            <RouteTransition />
-            <Header />
-            <main id="main-content">{children}</main>
-            <Footer />
-            <CustomCursor />
+            <RouteProgress />
+            <SiteHeader />
+            <main id="main-content" tabIndex={-1} className="outline-none">
+              {children}
+            </main>
+            <SiteFooter />
+            <CursorRing />
           </ThemeProvider>
         </Providers>
       </body>
